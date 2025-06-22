@@ -3,13 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC 교사 상담 도구</title>
+    <title>ABC 교사 상담 도구 - 개선 버전</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
         
         body {
             font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        /* CSS 변수로 색상 관리 */
+        :root {
+            --color-stage1: #d1fae5;
+            --color-stage1-dark: #065f46;
+            --color-stage2: #dbeafe;
+            --color-stage2-dark: #1e40af;
+            --color-stage3: #ede9fe;
+            --color-stage3-dark: #5b21b6;
+            --color-stage4: #ffedd5;
+            --color-stage4-dark: #9a3412;
+            --color-stage5: #fef3c7;
+            --color-stage5-dark: #92400e;
+            --color-stage6: #f3e8ff;
+            --color-stage6-dark: #6b21a8;
         }
         
         .step-card {
@@ -20,8 +36,293 @@
         .step-card.active {
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
         }
         
+        /* 단계별 네비게이션 - 🎨 UI 개선 1 */
+        .step-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .step-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 8px;
+            text-align: center;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-btn.active {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .step-btn.completed {
+            opacity: 0.9;
+        }
+        
+        .step-btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .step1-btn { 
+            background: linear-gradient(135deg, var(--color-stage1) 0%, #a7f3d0 100%); 
+            color: var(--color-stage1-dark); 
+        }
+        .step1-btn.active { border-color: #059669; }
+        
+        .step2-btn { 
+            background: linear-gradient(135deg, var(--color-stage2) 0%, #93c5fd 100%); 
+            color: var(--color-stage2-dark); 
+        }
+        .step2-btn.active { border-color: #3b82f6; }
+        
+        .step3-btn { 
+            background: linear-gradient(135deg, var(--color-stage3) 0%, #c4b5fd 100%); 
+            color: var(--color-stage3-dark); 
+        }
+        .step3-btn.active { border-color: #8b5cf6; }
+        
+        .step4-btn { 
+            background: linear-gradient(135deg, var(--color-stage4) 0%, #fed7aa 100%); 
+            color: var(--color-stage4-dark); 
+        }
+        .step4-btn.active { border-color: #f97316; }
+        
+        .step5-btn { 
+            background: linear-gradient(135deg, var(--color-stage5) 0%, #fde68a 100%); 
+            color: var(--color-stage5-dark); 
+        }
+        .step5-btn.active { border-color: #f59e0b; }
+        
+        .step6-btn { 
+            background: linear-gradient(135deg, var(--color-stage6) 0%, #e9d5ff 100%); 
+            color: var(--color-stage6-dark); 
+        }
+        .step6-btn.active { border-color: #8b5cf6; }
+
+        /* ABC 카드 시각화 - 🎨 UI 개선 2 */
+        .abc-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        
+        .abc-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .abc-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .abc-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .abc-card:hover::before {
+            width: 8px;
+        }
+        
+        .abc-a::before { background: linear-gradient(180deg, #ef4444, #dc2626); }
+        .abc-b::before { background: linear-gradient(180deg, #f59e0b, #d97706); }
+        .abc-c::before { background: linear-gradient(180deg, #3b82f6, #2563eb); }
+        
+        .abc-label {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .abc-a .abc-label { color: #dc2626; }
+        .abc-b .abc-label { color: #d97706; }
+        .abc-c .abc-label { color: #2563eb; }
+        
+        .abc-example {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-style: italic;
+            margin-top: 8px;
+        }
+
+        /* 체크리스트 개선 - 📝 체크리스트 적용 */
+        .checklist-section {
+            background: rgba(139, 92, 246, 0.03);
+            border: 2px solid rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-section:hover {
+            border-color: rgba(139, 92, 246, 0.2);
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .checklist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .checklist-title {
+            font-weight: bold;
+            color: #7c3aed;
+            font-size: 1.1rem;
+        }
+
+        .apply-btn {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+            white-space: nowrap;
+        }
+
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .apply-btn.help-apply {
+            background: linear-gradient(135deg, #06b6d4, #67e8f9);
+            box-shadow: 0 2px 4px rgba(6, 182, 212, 0.2);
+        }
+
+        .apply-btn.help-apply:hover {
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        
+        .checklist-item:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            margin: 0;
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+        
+        .checklist-item label {
+            flex: 1;
+            cursor: pointer;
+            line-height: 1.4;
+            color: #4b5563;
+            font-size: 0.9rem;
+        }
+
+        /* 스마트 분류 안내 */
+        .smart-classification {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .smart-classification::before {
+            content: '🤖';
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .category-tag {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* 알림 시스템 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
         .emotion-btn {
             transition: all 0.2s ease;
         }
@@ -35,31 +336,6 @@
             color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-        }
-        
-        .checklist-item {
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .checklist-item:hover {
-            background-color: #f1f5f9;
-        }
-        
-        .checklist-item.checked {
-            background-color: #dcfce7;
-            border-color: #16a34a;
-        }
-        
-        .progress-bar {
-            transition: width 0.3s ease;
-        }
-        
-        .floating-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
         }
         
         .situation-card {
@@ -78,6 +354,33 @@
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             border-color: #3b82f6;
         }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .step-nav {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .step-btn {
+                font-size: 0.8rem;
+                padding: 10px 8px;
+                min-width: auto;
+            }
+
+            .abc-preview {
+                grid-template-columns: 1fr;
+            }
+
+            .checklist-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .apply-btn {
+                width: 100%;
+            }
+        }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
@@ -87,7 +390,7 @@
         .fade-in {
             animation: fadeIn 0.5s ease;
         }
-        
+
         .message-card {
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border: 2px solid #f59e0b;
@@ -100,18 +403,38 @@
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
+            <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
+                ✨ 스마트 분류 & 체크리스트 적용 기능이 추가된 개선 버전
+            </div>
         </div>
 
-        <!-- 진행 상태 바 -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-700">진행 상황</span>
-                <span class="text-sm font-medium text-gray-700" id="progressText">0%</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-3">
-                <div class="bg-blue-600 h-3 rounded-full progress-bar" style="width: 0%" id="progressBar"></div>
-            </div>
-        </div>
+        <!-- 🎨 개선된 단계별 네비게이션 -->
+        <nav class="step-nav">
+            <button class="step-btn step1-btn active" data-step="1">
+                1️⃣ 기본정보<br>
+                <span class="text-xs opacity-75">이름 입력</span>
+            </button>
+            <button class="step-btn step2-btn disabled" data-step="2">
+                2️⃣ 고민선택<br>
+                <span class="text-xs opacity-75">상황 파악</span>
+            </button>
+            <button class="step-btn step3-btn disabled" data-step="3">
+                3️⃣ ABC정리<br>
+                <span class="text-xs opacity-75">구조적 분석</span>
+            </button>
+            <button class="step-btn step4-btn disabled" data-step="4">
+                4️⃣ 감정공감<br>
+                <span class="text-xs opacity-75">마음 이해</span>
+            </button>
+            <button class="step-btn step5-btn disabled" data-step="5">
+                5️⃣ 학생조언<br>
+                <span class="text-xs opacity-75">경험 공유</span>
+            </button>
+            <button class="step-btn step6-btn disabled" data-step="6">
+                6️⃣ 격려완성<br>
+                <span class="text-xs opacity-75">응원 메시지</span>
+            </button>
+        </nav>
 
         <!-- 단계 1: 기본 정보 입력 -->
         <div class="step-card active border-2 rounded-lg p-6 mb-6" id="step1">
@@ -135,6 +458,57 @@
         <div class="step-card border-2 rounded-lg p-6 mb-6 hidden" id="step2">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">2️⃣ 선생님의 고민을 선택해주세요</h2>
             
+            <!-- 🎨 ABC 카드 시각화 미리보기 -->
+            <div class="abc-preview">
+                <div class="abc-card abc-a">
+                    <div class="abc-label">
+                        🅰️ 사실 (Facts)
+                        <span class="text-xs bg-red-100 px-2 py-1 rounded-full">무슨 일이?</span>
+                    </div>
+                    <p class="text-sm text-gray-600">실제로 일어난 구체적인 상황</p>
+                    <div class="abc-example">
+                        예: "수업 중 학생들이 떠들었다"
+                    </div>
+                </div>
+                
+                <div class="abc-card abc-b">
+                    <div class="abc-label">
+                        🅱️ 생각 (Beliefs)
+                        <span class="text-xs bg-yellow-100 px-2 py-1 rounded-full">어떤 생각?</span>
+                    </div>
+                    <p class="text-sm text-gray-600">그때 든 생각이나 믿음</p>
+                    <div class="abc-example">
+                        예: "내 수업이 재미없나보다"
+                    </div>
+                </div>
+                
+                <div class="abc-card abc-c">
+                    <div class="abc-label">
+                        🅲️ 결과 (Consequences)
+                        <span class="text-xs bg-blue-100 px-2 py-1 rounded-full">어떤 결과?</span>
+                    </div>
+                    <p class="text-sm text-gray-600">나타난 감정이나 행동</p>
+                    <div class="abc-example">
+                        예: "속상하고 자신감이 떨어진다"
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🤖 스마트 분류 안내 -->
+            <div class="smart-classification">
+                <h3 class="font-semibold text-sky-700 mb-2">🤖 스마트 자동 분류 시스템</h3>
+                <p class="text-sm text-gray-600 mb-2">
+                    고민 내용을 분석하여 자동으로 적합한 카테고리를 찾아 맞춤형 체크리스트를 제공합니다!
+                </p>
+                <div class="category-tags">
+                    <span class="category-tag bg-green-100 text-green-700">📚 수업 참여</span>
+                    <span class="category-tag bg-blue-100 text-blue-700">👥 학급 관리</span>
+                    <span class="category-tag bg-purple-100 text-purple-700">📖 학습 지도</span>
+                    <span class="category-tag bg-orange-100 text-orange-700">👨‍👩‍👧‍👦 학부모 관계</span>
+                    <span class="category-tag bg-red-100 text-red-700">💼 업무 스트레스</span>
+                </div>
+            </div>
+            
             <!-- 카테고리 선택 -->
             <div id="categorySelection">
                 <h3 class="text-lg font-medium mb-3 text-gray-700">먼저 고민 분야를 선택해주세요</h3>
@@ -148,6 +522,9 @@
                 <div class="flex items-center mb-4">
                     <button onclick="backToCategories()" class="text-blue-500 hover:text-blue-600 mr-3">← 분야 다시 선택</button>
                     <h3 class="text-lg font-medium text-gray-700" id="selectedCategoryTitle"></h3>
+                    <div id="detectedCategoryBadge" class="ml-3 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full hidden">
+                        🤖 자동 분류됨
+                    </div>
                 </div>
                 
                 <div class="grid gap-3 mb-6" id="situationList">
@@ -215,17 +592,32 @@
             <p class="text-gray-600 mb-6">여러분의 경험에서 도움이 될 만한 것들을 선택해주세요.</p>
             
             <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-purple-700 mb-3">🤔 생각해볼 점</h3>
+                <!-- 📝 체크리스트 적용 기능 - 생각해볼 점 -->
+                <div class="checklist-section">
+                    <div class="checklist-header">
+                        <div class="checklist-title">🤔 생각해볼 점</div>
+                        <button onclick="applyThinkingChecklist()" class="apply-btn">
+                            📝 선택한 생각들 적용하기
+                        </button>
+                    </div>
                     <div id="thinkingChecklist" class="space-y-2">
                         <!-- 생각 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
+                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..."></textarea>
                 </div>
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h3 class="font-semibold text-green-700 mb-3">🙋‍♀️ 행동 아이디어</h3>
+                
+                <!-- 📝 체크리스트 적용 기능 - 행동 아이디어 -->
+                <div class="checklist-section">
+                    <div class="checklist-header">
+                        <div class="checklist-title">🙋‍♀️ 행동 아이디어</div>
+                        <button onclick="applyHelpChecklist()" class="apply-btn help-apply">
+                            🎯 선택한 방법들 적용하기
+                        </button>
+                    </div>
                     <div id="helpChecklist" class="space-y-2">
                         <!-- 행동 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
+                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..."></textarea>
                 </div>
             </div>
 
@@ -295,8 +687,13 @@
         </div>
     </div>
 
+    <!-- 알림 시스템 -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
     <!-- 도움말 버튼 -->
-    <button onclick="showHelp()" class="floating-btn bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors">
+    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
         ❓
     </button>
 
@@ -308,6 +705,7 @@
         let selectedEmotion = null;
         let selectedAdvice = { thinking: [], help: [] };
         let selectedCommitments = [];
+        let detectedCategory = null; // 🤖 자동 분류된 카테고리
 
         // 데이터
         const worryCases = {
@@ -349,6 +747,33 @@
             { name: "피곤함", emoji: "😴", empathy: "정말 피곤하셨을 거예요. 쉬는 시간도 부족하실 텐데 고생이 많으세요." }
         ];
 
+        // 🤖 스마트 카테고리 분류 시스템
+        function classifyCategory(text) {
+            const keywords = {
+                '수업 참여': ['집중', '떠들', '질문', '대답', '발표', '소극적', '참여', '수업', '시간', '활동'],
+                '학급 관리': ['싸워', '규칙', '지키지', '어수선', '분위기', '관리', '학급', '정리', '갈등'],
+                '학습 지도': ['속도', '숙제', '성적', '이해', '공부', '학습', '지도', '문제', '과제', '점수'],
+                '학부모 관계': ['간섭', '문의', '상담', '교육방침', '학부모', '부모님', '가정', '요청'],
+                '업무 스트레스': ['업무', '시간', '부족', '피곤', '번아웃', '행정', '준비', '회의', '동료']
+            };
+            
+            const lowerText = text.toLowerCase();
+            const scores = {};
+            
+            Object.entries(keywords).forEach(([category, wordList]) => {
+                scores[category] = wordList.filter(keyword => 
+                    lowerText.includes(keyword)
+                ).length;
+            });
+            
+            const bestCategory = Object.entries(scores).reduce((a, b) => 
+                scores[a[0]] > scores[b[0]] ? a : b
+            )[0];
+            
+            return scores[bestCategory] > 0 ? bestCategory : '수업 참여';
+        }
+
+        // 📝 상황별 체크리스트 데이터
         const situationBasedChecklists = {
             "수업 참여": {
                 thinking: [
@@ -456,12 +881,99 @@
             "선생님의 새로운 아이디어를 응원할게요"
         ];
 
+        // 알림 표시 함수
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 📝 체크리스트 적용 함수들
+        function applyThinkingChecklist() {
+            const checkedItems = [];
+            document.querySelectorAll('#thinkingChecklist input[type="checkbox"]:checked').forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                if (label) {
+                    checkedItems.push(label.textContent.trim());
+                }
+            });
+            
+            if (checkedItems.length > 0) {
+                const textarea = document.getElementById('thinking-textarea');
+                const currentText = textarea.value;
+                const newText = checkedItems.join('. ') + '.';
+                
+                if (currentText.trim()) {
+                    textarea.value = currentText + '\n\n' + newText;
+                } else {
+                    textarea.value = newText;
+                }
+                
+                // 체크박스 초기화
+                document.querySelectorAll('#thinkingChecklist input[type="checkbox"]').forEach(cb => cb.checked = false);
+                
+                showNotification('💭 선택한 생각들이 적용되었습니다!');
+                updateAdvicePreview();
+            } else {
+                showNotification('❗ 적용할 항목을 선택해주세요!');
+            }
+        }
+        
+        function applyHelpChecklist() {
+            const checkedItems = [];
+            let counter = 1;
+            
+            document.querySelectorAll('#helpChecklist input[type="checkbox"]:checked').forEach(checkbox => {
+                const label = checkbox.nextElementSibling;
+                if (label) {
+                    checkedItems.push(`${counter}) ${label.textContent.trim()}`);
+                    counter++;
+                }
+            });
+            
+            if (checkedItems.length > 0) {
+                const textarea = document.getElementById('help-textarea');
+                const currentText = textarea.value;
+                const newText = checkedItems.join('\n');
+                
+                if (currentText.trim()) {
+                    textarea.value = currentText + '\n\n' + newText;
+                } else {
+                    textarea.value = newText;
+                }
+                
+                // 체크박스 초기화
+                document.querySelectorAll('#helpChecklist input[type="checkbox"]').forEach(cb => cb.checked = false);
+                
+                showNotification('🎯 선택한 방법들이 적용되었습니다!');
+                updateAdvicePreview();
+            } else {
+                showNotification('❗ 적용할 항목을 선택해주세요!');
+            }
+        }
+
         // 초기화
         function init() {
             renderWorryCategories();
             renderEmotionButtons();
             renderCommitmentOptions();
-            updateProgress();
+            loadSituationBasedChecklists('수업 참여'); // 기본 체크리스트 로드
+            
+            // 단계 네비게이션 이벤트 리스너
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const step = parseInt(this.dataset.step);
+                    if (!this.classList.contains('disabled')) {
+                        goToStep(step);
+                    }
+                });
+            });
         }
 
         // 고민 카테고리 렌더링
@@ -471,7 +983,7 @@
             
             Object.keys(worryCases).forEach(category => {
                 const div = document.createElement('div');
-                div.className = 'worry-card bg-white border-2 border-gray-200 rounded-lg p-4 text-center';
+                div.className = 'worry-card bg-white border-2 border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-all duration-200';
                 div.onclick = () => selectWorryCategory(category);
                 div.innerHTML = `
                     <h3 class="font-semibold text-gray-800 mb-2">${category}</h3>
@@ -488,7 +1000,7 @@
             
             emotions.forEach(emotion => {
                 const button = document.createElement('button');
-                button.className = 'emotion-btn bg-white border-2 border-gray-200 rounded-lg p-4 text-center';
+                button.className = 'emotion-btn bg-white border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-400 transition-all duration-200';
                 button.onclick = () => selectEmotion(emotion);
                 button.innerHTML = `
                     <div class="text-3xl mb-2">${emotion.emoji}</div>
@@ -505,7 +1017,7 @@
             
             commitmentOptions.forEach((option, index) => {
                 const label = document.createElement('label');
-                label.className = 'flex items-center space-x-2 cursor-pointer';
+                label.className = 'flex items-center space-x-2 cursor-pointer p-2 rounded hover:bg-indigo-50';
                 label.innerHTML = `
                     <input type="checkbox" value="${index}" onchange="toggleCommitment(${index})" class="rounded">
                     <span class="text-sm">${option}</span>
@@ -514,15 +1026,47 @@
             });
         }
 
+        // 📝 상황별 체크리스트 로드
+        function loadSituationBasedChecklists(category) {
+            const normalizedCategory = category || '수업 참여';
+            const checklistData = situationBasedChecklists[normalizedCategory] || situationBasedChecklists['수업 참여'];
+            
+            // 생각 체크리스트
+            const thinkingContainer = document.getElementById('thinkingChecklist');
+            if (thinkingContainer) {
+                thinkingContainer.innerHTML = checklistData.thinking.map((item, index) => `
+                    <div class="checklist-item">
+                        <input type="checkbox" id="thinking-${index}" class="thinking-checkbox">
+                        <label for="thinking-${index}">${item}</label>
+                    </div>
+                `).join('');
+            }
+            
+            // 행동 체크리스트
+            const helpContainer = document.getElementById('helpChecklist');
+            if (helpContainer) {
+                helpContainer.innerHTML = checklistData.help.map((item, index) => `
+                    <div class="checklist-item">
+                        <input type="checkbox" id="help-${index}" class="help-checkbox">
+                        <label for="help-${index}">${item}</label>
+                    </div>
+                `).join('');
+            }
+
+            showNotification(`📚 "${normalizedCategory}" 맞춤 체크리스트가 로드되었습니다!`);
+        }
+
         // 고민 카테고리 선택
         function selectWorryCategory(category) {
             // 기존 선택 해제
             document.querySelectorAll('.worry-card').forEach(card => {
-                card.classList.remove('selected');
+                card.classList.remove('border-blue-400', 'bg-blue-50');
+                card.classList.add('border-gray-200');
             });
             
             // 새 선택 표시
-            event.target.closest('.worry-card').classList.add('selected');
+            event.target.closest('.worry-card').classList.remove('border-gray-200');
+            event.target.closest('.worry-card').classList.add('border-blue-400', 'bg-blue-50');
             
             selectedCategory = category;
             
@@ -533,6 +1077,9 @@
             
             // 구체적 상황 목록 렌더링
             renderSituationList(category);
+            
+            // 해당 카테고리의 체크리스트 로드
+            loadSituationBasedChecklists(category);
         }
 
         // 구체적 상황 목록 렌더링
@@ -542,7 +1089,7 @@
             
             worryCases[category].forEach((situation, index) => {
                 const div = document.createElement('div');
-                div.className = 'situation-card rounded-lg p-4';
+                div.className = 'situation-card rounded-lg p-4 cursor-pointer';
                 div.onclick = () => selectSpecificSituation(category, situation, index);
                 div.innerHTML = `
                     <div class="flex items-start space-x-3">
@@ -585,31 +1132,31 @@
             
             // 다음 버튼 활성화
             document.getElementById('step2Next').disabled = false;
+            
+            showNotification('📝 고민이 선택되었습니다!');
         }
 
-        // 카테고리 선택으로 돌아가기
-        function backToCategories() {
-            document.getElementById('situationSelection').classList.add('hidden');
-            document.getElementById('categorySelection').classList.remove('hidden');
-            
-            // 선택 초기화
-            selectedWorry = null;
-            selectedCategory = null;
-            document.getElementById('customWorry').value = '';
-            document.getElementById('step2Next').disabled = true;
-            
-            // 카테고리 선택 해제
-            document.querySelectorAll('.worry-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-        }
-
-        // 직접 입력 체크
+        // 🤖 직접 입력 처리 (스마트 분류 적용)
         function checkCustomWorryInput() {
             const customWorry = document.getElementById('customWorry').value.trim();
             const nextBtn = document.getElementById('step2Next');
             
             if (customWorry.length > 0 && selectedCategory) {
+                // 🤖 스마트 분류 실행
+                detectedCategory = classifyCategory(customWorry);
+                
+                // 분류 결과 표시
+                if (detectedCategory !== selectedCategory) {
+                    const badge = document.getElementById('detectedCategoryBadge');
+                    badge.textContent = `🤖 "${detectedCategory}"로 자동 분류됨`;
+                    badge.classList.remove('hidden');
+                    
+                    // 감지된 카테고리로 체크리스트 업데이트
+                    loadSituationBasedChecklists(detectedCategory);
+                    
+                    showNotification(`🤖 입력 내용을 분석하여 "${detectedCategory}" 카테고리로 분류했습니다!`);
+                }
+                
                 // 기존 상황 선택 해제
                 document.querySelectorAll('.situation-card').forEach(card => {
                     card.classList.remove('selected');
@@ -621,6 +1168,26 @@
             } else {
                 nextBtn.disabled = true;
             }
+        }
+
+        // 카테고리 선택으로 돌아가기
+        function backToCategories() {
+            document.getElementById('situationSelection').classList.add('hidden');
+            document.getElementById('categorySelection').classList.remove('hidden');
+            document.getElementById('detectedCategoryBadge').classList.add('hidden');
+            
+            // 선택 초기화
+            selectedWorry = null;
+            selectedCategory = null;
+            detectedCategory = null;
+            document.getElementById('customWorry').value = '';
+            document.getElementById('step2Next').disabled = true;
+            
+            // 카테고리 선택 해제
+            document.querySelectorAll('.worry-card').forEach(card => {
+                card.classList.remove('border-blue-400', 'bg-blue-50');
+                card.classList.add('border-gray-200');
+            });
         }
 
         // ABC 필드 채우기
@@ -648,86 +1215,29 @@
             
             // 다음 버튼 활성화
             document.getElementById('step4Next').disabled = false;
-        }
-
-        // 조언 체크리스트 렌더링
-        function renderAdviceChecklists() {
-            if (!selectedWorry || !selectedCategory) return;
             
-            const category = selectedCategory;
-            const checklists = situationBasedChecklists[category];
-            
-            // 생각 체크리스트
-            const thinkingContainer = document.getElementById('thinkingChecklist');
-            thinkingContainer.innerHTML = '';
-            checklists.thinking.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'checklist-item border border-gray-200 rounded p-3';
-                div.onclick = () => toggleAdviceItem('thinking', index, item);
-                div.innerHTML = `
-                    <input type="checkbox" class="mr-2" id="thinking-${index}">
-                    <label for="thinking-${index}" class="cursor-pointer">${item}</label>
-                `;
-                thinkingContainer.appendChild(div);
-            });
-            
-            // 행동 체크리스트
-            const helpContainer = document.getElementById('helpChecklist');
-            helpContainer.innerHTML = '';
-            checklists.help.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = 'checklist-item border border-gray-200 rounded p-3';
-                div.onclick = () => toggleAdviceItem('help', index, item);
-                div.innerHTML = `
-                    <input type="checkbox" class="mr-2" id="help-${index}">
-                    <label for="help-${index}" class="cursor-pointer">${item}</label>
-                `;
-                helpContainer.appendChild(div);
-            });
-        }
-
-        // 조언 항목 토글
-        function toggleAdviceItem(type, index, item) {
-            const checkbox = document.getElementById(`${type}-${index}`);
-            const container = checkbox.closest('.checklist-item');
-            
-            if (checkbox.checked) {
-                checkbox.checked = false;
-                container.classList.remove('checked');
-                selectedAdvice[type] = selectedAdvice[type].filter(i => i !== item);
-            } else {
-                checkbox.checked = true;
-                container.classList.add('checked');
-                selectedAdvice[type].push(item);
-            }
-            
-            updateAdvicePreview();
+            showNotification('💚 감정이 선택되었습니다!');
         }
 
         // 조언 미리보기 업데이트
         function updateAdvicePreview() {
-            const hasAdvice = selectedAdvice.thinking.length > 0 || selectedAdvice.help.length > 0;
+            const thinkingText = document.getElementById('thinking-textarea')?.value || '';
+            const helpText = document.getElementById('help-textarea')?.value || '';
             
-            if (hasAdvice) {
-                let adviceText = '';
+            if (thinkingText || helpText) {
+                let adviceHTML = '';
                 
-                if (selectedAdvice.thinking.length > 0) {
-                    adviceText += '<h4 class="font-semibold mb-2">💭 생각해볼 점:</h4><ul class="list-disc list-inside mb-4">';
-                    selectedAdvice.thinking.forEach(item => {
-                        adviceText += `<li>${item}</li>`;
-                    });
-                    adviceText += '</ul>';
+                if (thinkingText) {
+                    adviceHTML += '<h4 class="font-semibold mb-2">💭 생각해볼 점:</h4>';
+                    adviceHTML += `<p class="mb-4">${thinkingText}</p>`;
                 }
                 
-                if (selectedAdvice.help.length > 0) {
-                    adviceText += '<h4 class="font-semibold mb-2">🚀 시도해볼 방법:</h4><ul class="list-disc list-inside">';
-                    selectedAdvice.help.forEach(item => {
-                        adviceText += `<li>${item}</li>`;
-                    });
-                    adviceText += '</ul>';
+                if (helpText) {
+                    adviceHTML += '<h4 class="font-semibold mb-2">🎯 시도해볼 방법:</h4>';
+                    adviceHTML += `<p>${helpText.replace(/\n/g, '<br>')}</p>`;
                 }
                 
-                document.getElementById('adviceText').innerHTML = adviceText;
+                document.getElementById('adviceText').innerHTML = adviceHTML;
                 document.getElementById('advicePreview').classList.remove('hidden');
             } else {
                 document.getElementById('advicePreview').classList.add('hidden');
@@ -741,6 +1251,8 @@
             
             document.getElementById('encouragementText').textContent = message;
             document.getElementById('encouragementCard').classList.remove('hidden');
+            
+            showNotification('💌 따뜻한 격려 메시지가 도착했어요!');
         }
 
         // 실천 약속 토글
@@ -753,6 +1265,40 @@
             }
         }
 
+        // 단계 이동 함수
+        function goToStep(targetStep) {
+            // 현재 단계 숨기기
+            document.getElementById(`step${currentStep}`).classList.add('hidden');
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            
+            // 타겟 단계 보이기
+            document.getElementById(`step${targetStep}`).classList.remove('hidden');
+            document.getElementById(`step${targetStep}`).classList.add('active');
+            document.getElementById(`step${targetStep}`).scrollIntoView({ behavior: 'smooth' });
+            
+            // 단계 버튼 업데이트
+            document.querySelectorAll('.step-btn').forEach((btn, index) => {
+                const btnStep = index + 1;
+                btn.classList.remove('active');
+                
+                if (btnStep === targetStep) {
+                    btn.classList.add('active');
+                }
+                
+                if (btnStep < targetStep) {
+                    btn.classList.remove('disabled');
+                    btn.classList.add('completed');
+                } else if (btnStep > targetStep) {
+                    btn.classList.add('disabled');
+                    btn.classList.remove('completed');
+                }
+            });
+            
+            currentStep = targetStep;
+            
+            showNotification(`📍 ${targetStep}단계로 이동했습니다!`);
+        }
+
         // 다음 단계로 이동
         function nextStep(step) {
             // 유효성 검사
@@ -760,7 +1306,7 @@
                 const studentName = document.getElementById('studentName').value.trim();
                 const teacherName = document.getElementById('teacherName').value.trim();
                 if (!studentName || !teacherName) {
-                    alert('학생 이름과 선생님 이름을 모두 입력해주세요.');
+                    showNotification('❗ 학생 이름과 선생님 이름을 모두 입력해주세요.');
                     return;
                 }
             }
@@ -768,88 +1314,44 @@
             if (step === 2) {
                 const customWorry = document.getElementById('customWorry').value.trim();
                 if (!selectedWorry && !customWorry) {
-                    alert('구체적인 상황을 선택하거나 직접 입력해주세요.');
+                    showNotification('❗ 구체적인 상황을 선택하거나 직접 입력해주세요.');
                     return;
                 }
+                
+                // 🤖 직접 입력한 경우 스마트 분류 적용
                 if (customWorry && selectedCategory) {
-                    // 직접 입력한 경우
+                    const finalCategory = detectedCategory || selectedCategory;
                     selectedWorry = { 
-                        category: selectedCategory, 
-                        case: { text: customWorry, abc: { a: "", b: "", c: "" } },
+                        category: finalCategory, 
+                        case: { 
+                            text: customWorry, 
+                            abc: { 
+                                a: customWorry, 
+                                b: "이런 상황에서 드는 생각", 
+                                c: "결과로 나타나는 감정과 행동" 
+                            } 
+                        },
                         isCustom: true
                     };
+                    
+                    // ABC 필드 초기화
+                    document.getElementById('factA').value = customWorry;
+                    document.getElementById('beliefB').value = "";
+                    document.getElementById('consequenceC').value = "";
                 }
+                
                 if (!selectedWorry) {
-                    alert('고민 분야를 먼저 선택해주세요.');
+                    showNotification('❗ 고민 분야를 먼저 선택해주세요.');
                     return;
                 }
             }
             
-            // 현재 단계 숨기기
-            document.getElementById(`step${step}`).classList.add('hidden');
-            document.getElementById(`step${step}`).classList.remove('active');
-            
-            // 다음 단계 보이기
-            const nextStep = step + 1;
-            document.getElementById(`step${nextStep}`).classList.remove('hidden');
-            document.getElementById(`step${nextStep}`).classList.add('active');
-            document.getElementById(`step${nextStep}`).scrollIntoView({ behavior: 'smooth' });
-            
-            currentStep = nextStep;
-            updateProgress();
-            
-            // 특별 처리
-            if (nextStep === 5) {
-                renderAdviceChecklists();
-            }
-            if (nextStep === 7) {
-                generateFinalResult();
-            }
+            goToStep(step + 1);
         }
 
         // 이전 단계로 이동
         function prevStep(step) {
-            // 현재 단계 숨기기
-            document.getElementById(`step${step}`).classList.add('hidden');
-            document.getElementById(`step${step}`).classList.remove('active');
-            
-            // 이전 단계 보이기
-            const prevStepNum = step - 1;
-            document.getElementById(`step${prevStepNum}`).classList.remove('hidden');
-            document.getElementById(`step${prevStepNum}`).classList.add('active');
-            document.getElementById(`step${prevStepNum}`).scrollIntoView({ behavior: 'smooth' });
-            
-            currentStep = prevStepNum;
-            updateProgress();
-            
-            // step2로 돌아갈 때 특별 처리
-            if (prevStepNum === 2 && selectedWorry) {
-                // 이미 선택된 상태 복원
-                if (selectedCategory) {
-                    document.getElementById('categorySelection').classList.add('hidden');
-                    document.getElementById('situationSelection').classList.remove('hidden');
-                    document.getElementById('selectedCategoryTitle').textContent = `${selectedCategory} 관련 고민`;
-                    renderSituationList(selectedCategory);
-                    
-                    // 선택된 상황이 있다면 하이라이트
-                    setTimeout(() => {
-                        if (selectedWorry && !selectedWorry.isCustom) {
-                            const situationCards = document.querySelectorAll('.situation-card');
-                            if (situationCards[selectedWorry.index]) {
-                                situationCards[selectedWorry.index].classList.add('selected');
-                            }
-                        }
-                    }, 100);
-                }
-                document.getElementById('step2Next').disabled = false;
-            }
-        }
-
-        // 진행률 업데이트
-        function updateProgress() {
-            const progress = ((currentStep - 1) / 6) * 100;
-            document.getElementById('progressBar').style.width = `${progress}%`;
-            document.getElementById('progressText').textContent = `${Math.round(progress)}%`;
+            goToStep(step - 1);
         }
 
         // 최종 결과 생성
@@ -868,6 +1370,8 @@
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                         <h4 class="font-semibold text-gray-800 mb-2">📂 고민 분야</h4>
                         <p class="text-gray-600">${selectedCategory}</p>
+                        ${detectedCategory && detectedCategory !== selectedCategory ? 
+                            `<p class="text-sm text-green-600 mt-1">🤖 스마트 분류: ${detectedCategory}</p>` : ''}
                     </div>
                     
                     <div class="bg-white rounded-lg p-4 border border-gray-200">
@@ -883,7 +1387,7 @@
                 
                 <div class="bg-white rounded-lg p-4 border border-gray-200 mt-4">
                     <h4 class="font-semibold text-gray-800 mb-2">🎯 학생의 조언</h4>
-                    ${document.getElementById('adviceText').innerHTML}
+                    ${document.getElementById('adviceText').innerHTML || '<p class="text-gray-500">작성된 조언이 없습니다.</p>'}
                 </div>
             `;
             
@@ -930,8 +1434,11 @@
             content += `상담 학생: ${studentName}\n`;
             content += `상담 대상: ${teacherName}\n\n`;
             
-            content += `[고민 분야]\n${selectedCategory}\n\n`;
-            content += `[고민 상황]\n${selectedWorry?.case.text || '직접 입력한 고민'}\n\n`;
+            content += `[고민 분야]\n${selectedCategory}\n`;
+            if (detectedCategory && detectedCategory !== selectedCategory) {
+                content += `스마트 분류: ${detectedCategory}\n`;
+            }
+            content += `\n[고민 상황]\n${selectedWorry?.case.text || '직접 입력한 고민'}\n\n`;
             
             content += `[ABC 분석]\n`;
             content += `A (사실): ${document.getElementById('factA').value}\n`;
@@ -940,16 +1447,18 @@
             
             content += `[감정]: ${selectedEmotion?.name}\n\n`;
             
-            content += `[학생의 조언]\n`;
-            if (selectedAdvice.thinking.length > 0) {
-                content += `생각해볼 점:\n`;
-                selectedAdvice.thinking.forEach(item => content += `- ${item}\n`);
-                content += `\n`;
-            }
-            if (selectedAdvice.help.length > 0) {
-                content += `시도해볼 방법:\n`;
-                selectedAdvice.help.forEach(item => content += `- ${item}\n`);
-                content += `\n`;
+            // 조언 내용 추가
+            const thinkingText = document.getElementById('thinking-textarea')?.value;
+            const helpText = document.getElementById('help-textarea')?.value;
+            
+            if (thinkingText || helpText) {
+                content += `[학생의 조언]\n`;
+                if (thinkingText) {
+                    content += `생각해볼 점:\n${thinkingText}\n\n`;
+                }
+                if (helpText) {
+                    content += `시도해볼 방법:\n${helpText}\n\n`;
+                }
             }
             
             const encouragement = document.getElementById('encouragementText').textContent;
@@ -974,75 +1483,25 @@
             a.download = `ABC상담결과_${studentName}_${date}.txt`;
             a.click();
             URL.revokeObjectURL(url);
+            
+            showNotification('📄 파일이 다운로드되었습니다!');
         }
 
         // 인쇄
         function printResult() {
-            const printWindow = window.open('', '_blank');
-            const content = document.getElementById('finalResult').innerHTML;
-            
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>ABC 상담 결과</title>
-                    <style>
-                        body { font-family: 'Noto Sans KR', sans-serif; margin: 20px; }
-                        .bg-white { background: white; }
-                        .rounded-lg { border-radius: 8px; }
-                        .p-4 { padding: 16px; }
-                        .border { border: 1px solid #e5e7eb; }
-                        .mb-2 { margin-bottom: 8px; }
-                        .mb-4 { margin-bottom: 16px; }
-                        .mt-4 { margin-top: 16px; }
-                        .font-semibold { font-weight: 600; }
-                        .text-center { text-align: center; }
-                        .grid { display: grid; }
-                        .gap-6 { gap: 24px; }
-                        @media (min-width: 768px) { .md\\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); } }
-                        ul { padding-left: 20px; }
-                        li { margin-bottom: 4px; }
-                    </style>
-                </head>
-                <body>${content}</body>
-                </html>
-            `);
-            
-            printWindow.document.close();
-            printWindow.print();
+            window.print();
         }
 
         // 폼 리셋
         function resetForm() {
             if (confirm('정말 새로 시작하시겠습니까? 모든 내용이 삭제됩니다.')) {
-                // 변수 초기화
-                currentStep = 1;
-                selectedWorry = null;
-                selectedCategory = null;
-                selectedEmotion = null;
-                selectedAdvice = { thinking: [], help: [] };
-                selectedCommitments = [];
-                
-                // UI 초기화
-                document.getElementById('categorySelection').classList.remove('hidden');
-                document.getElementById('situationSelection').classList.add('hidden');
-                
                 location.reload();
             }
         }
 
         // 도움말
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:
-
-1. 학생과 선생님 이름을 입력합니다
-2. 선생님의 고민 상황을 선택하거나 직접 입력합니다  
-3. ABC 모델로 상황을 분석합니다 (사실-생각-결과)
-4. 선생님의 감정에 공감합니다
-5. 학생의 경험을 바탕으로 조언을 제공합니다
-6. 격려 메시지와 실천 약속을 정합니다
-7. 결과를 저장하거나 인쇄할 수 있습니다
-
-궁금한 점이 있으면 언제든 물어보세요! 😊`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 기능들을 활용해보세요!`);
         }
 
         // 페이지 로드 시 초기화
