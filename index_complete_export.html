@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC 교사 상담 도구 - 완전한 버전</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 이미지/PDF 저장을 위한 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        
+        /* 선택된 고민 표시 카드 */
+        .selected-worry-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(14, 165, 233, 0.1);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .worry-summary {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .worry-icon {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .worry-content {
+            flex: 1;
+        }
+
+        .worry-title {
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .worry-text {
+            color: #374151;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .worry-category-badge {
+            display: inline-block;
+            background: rgba(14, 165, 233, 0.1);
+            color: #0c4a6e;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* 결과 카드 스타일 */
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 0;
+            margin: 20px auto;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+        }
+
+        .result-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-content {
+            background: white;
+            padding: 30px;
+            margin: 0;
+        }
+
+        .result-title {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        /* 내보내기 버튼들 */
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .export-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .image-btn {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .image-btn:hover {
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .pdf-btn {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .pdf-btn:hover {
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .print-btn:hover {
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+        }
+
+        .text-btn {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+            color: white;
+            box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3);
+        }
+
+        .text-btn:hover {
+            box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4);
+        }
+
+        /* 로딩 스피너 */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 기존 스타일들 */
+        :root {
+            --color-stage1: #d1fae5;
+            --color-stage1-dark: #065f46;
+            --color-stage2: #dbeafe;
+            --color-stage2-dark: #1e40af;
+            --color-stage3: #ede9fe;
+            --color-stage3-dark: #5b21b6;
+            --color-stage4: #ffedd5;
+            --color-stage4-dark: #9a3412;
+            --color-stage5: #fef3c7;
+            --color-stage5-dark: #92400e;
+            --color-stage6: #f3e8ff;
+            --color-stage6-dark: #6b21a8;
+        }
+        
+        .step-card {
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+        
+        .step-card.active {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+        
+        .step-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .step-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 8px;
+            text-align: center;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            font-size: 0.85rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-btn.active {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .step-btn.completed {
+            opacity: 0.9;
+        }
+        
+        .step-btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .step1-btn { 
+            background: linear-gradient(135deg, var(--color-stage1) 0%, #a7f3d0 100%); 
+            color: var(--color-stage1-dark); 
+        }
+        .step1-btn.active { border-color: #059669; }
+        
+        .step2-btn { 
+            background: linear-gradient(135deg, var(--color-stage2) 0%, #93c5fd 100%); 
+            color: var(--color-stage2-dark); 
+        }
+        .step2-btn.active { border-color: #3b82f6; }
+        
+        .step3-btn { 
+            background: linear-gradient(135deg, var(--color-stage3) 0%, #c4b5fd 100%); 
+            color: var(--color-stage3-dark); 
+        }
+        .step3-btn.active { border-color: #8b5cf6; }
+        
+        .step4-btn { 
+            background: linear-gradient(135deg, var(--color-stage4) 0%, #fed7aa 100%); 
+            color: var(--color-stage4-dark); 
+        }
+        .step4-btn.active { border-color: #f97316; }
+        
+        .step5-btn { 
+            background: linear-gradient(135deg, var(--color-stage5) 0%, #fde68a 100%); 
+            color: var(--color-stage5-dark); 
+        }
+        .step5-btn.active { border-color: #f59e0b; }
+        
+        .step6-btn { 
+            background: linear-gradient(135deg, var(--color-stage6) 0%, #e9d5ff 100%); 
+            color: var(--color-stage6-dark); 
+        }
+        .step6-btn.active { border-color: #8b5cf6; }
+
+        /* 인쇄 전용 스타일 */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .export-buttons,
+            .notification,
+            .step-nav,
+            .help-btn {
+                display: none !important;
+            }
+            
+            .result-card {
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                max-width: none !important;
+                margin: 0 !important;
+            }
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .step-nav {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .step-btn {
+                font-size: 0.8rem;
+                padding: 10px 8px;
+                min-width: auto;
+            }
+
+            .worry-summary {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .worry-icon {
+                align-self: flex-start;
+            }
+
+            .result-card {
+                margin: 10px;
+                border-radius: 16px;
+            }
+            
+            .result-header {
+                padding: 20px;
+            }
+            
+            .result-content {
+                padding: 20px;
+            }
+            
+            .result-title {
+                font-size: 1.5rem;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .export-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 헤더 -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
+            <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
+            <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
+                ✨ 완전한 버전: 고민 지속 표시 + 이미지/PDF 저장 기능
+            </div>
+        </div>
+
+        <!-- 선택된 고민 요약 카드 - 데모용으로 표시 -->
+        <div id="selectedWorryCard" class="selected-worry-card">
+            <div class="worry-summary">
+                <div class="worry-icon">📝</div>
+                <div class="worry-content">
+                    <div class="worry-title">선택하신 고민</div>
+                    <div class="worry-text" id="worryDisplayText">학생들이 수업 시간에 집중하지 않아요</div>
+                    <div class="worry-category-badge" id="worryDisplayCategory">수업 참여</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 단계별 네비게이션 -->
+        <nav class="step-nav">
+            <button class="step-btn step1-btn completed" data-step="1">
+                1️⃣ 기본정보<br>
+                <span class="text-xs opacity-75">이름 입력</span>
+            </button>
+            <button class="step-btn step2-btn completed" data-step="2">
+                2️⃣ 고민선택<br>
+                <span class="text-xs opacity-75">상황 파악</span>
+            </button>
+            <button class="step-btn step3-btn completed" data-step="3">
+                3️⃣ ABC정리<br>
+                <span class="text-xs opacity-75">구조적 분석</span>
+            </button>
+            <button class="step-btn step4-btn completed" data-step="4">
+                4️⃣ 감정공감<br>
+                <span class="text-xs opacity-75">마음 이해</span>
+            </button>
+            <button class="step-btn step5-btn completed" data-step="5">
+                5️⃣ 학생조언<br>
+                <span class="text-xs opacity-75">경험 공유</span>
+            </button>
+            <button class="step-btn step6-btn active" data-step="6">
+                6️⃣ 격려완성<br>
+                <span class="text-xs opacity-75">응원 메시지</span>
+            </button>
+        </nav>
+
+        <!-- 완료 메시지 -->
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">🎉 상담이 완료되었습니다!</h2>
+            <p class="text-gray-600">결과를 이미지, PDF, 텍스트로 저장하거나 인쇄하실 수 있습니다.</p>
+        </div>
+
+        <!-- 내보내기 버튼들 -->
+        <div class="export-buttons">
+            <button class="export-btn image-btn" onclick="downloadAsImage()">
+                <span class="loading-spinner" id="imageSpinner"></span>
+                <span id="imageText">📷 이미지로 저장</span>
+            </button>
+            <button class="export-btn pdf-btn" onclick="downloadAsPDF()">
+                <span class="loading-spinner" id="pdfSpinner"></span>
+                <span id="pdfText">📄 PDF로 저장</span>
+            </button>
+            <button class="export-btn print-btn" onclick="printResult()">
+                🖨️ 인쇄하기
+            </button>
+            <button class="export-btn text-btn" onclick="downloadAsText()">
+                📝 텍스트로 저장
+            </button>
+        </div>
+
+        <!-- 상담 결과 카드 -->
+        <div class="result-card" id="resultCard">
+            <!-- 헤더 -->
+            <div class="result-header">
+                <div class="result-title">🌟 ABC 교사 상담 결과</div>
+                <div class="result-subtitle" id="resultSubtitle">김민수 학생이 이영희 선생님을 위한 따뜻한 조언</div>
+                <div class="text-white text-sm mt-2 opacity-75" id="resultDate"></div>
+            </div>
+
+            <!-- 내용 -->
+            <div class="result-content">
+                <!-- 기본 정보 -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4">
+                        <div class="text-green-600 font-semibold text-sm mb-2">👦 상담 학생</div>
+                        <div class="text-gray-800 font-medium" id="studentNameDisplay">김민수</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-xl p-4">
+                        <div class="text-blue-600 font-semibold text-sm mb-2">👩‍🏫 상담 대상</div>
+                        <div class="text-gray-800 font-medium" id="teacherNameDisplay">이영희 선생님</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-violet-50 border-2 border-purple-200 rounded-xl p-4">
+                        <div class="text-purple-600 font-semibold text-sm mb-2">📂 고민 분야</div>
+                        <div class="text-gray-800 font-medium" id="categoryDisplay">수업 참여</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-pink-200 rounded-xl p-4">
+                        <div class="text-pink-600 font-semibold text-sm mb-2">💖 선택한 감정</div>
+                        <div class="text-gray-800 font-medium" id="emotionDisplay">😢 속상함</div>
+                    </div>
+                </div>
+
+                <!-- 고민 상황 -->
+                <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-300 rounded-xl p-6 mb-6">
+                    <div class="text-xl font-bold text-amber-700 mb-3 flex items-center gap-2">
+                        📝 고민 상황
+                    </div>
+                    <div class="text-gray-700 leading-relaxed" id="worryContent">
+                        학생들이 수업 시간에 집중하지 않아서 속상해요. 게임이나 활동을 해도 반응이 별로고, 질문을 해도 대답하는 학생이 거의 없어요.
+                    </div>
+                </div>
+
+                <!-- ABC 분석 -->
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gradient-to-br from-red-50 to-rose-50 border-2 border-red-300 rounded-xl p-5">
+                        <div class="text-red-600 font-bold text-lg mb-2">🅰️ 사실 (Facts)</div>
+                        <div class="text-gray-700" id="factDisplay">수업 중 학생들이 딴짓을 하거나 떠들었다</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-xl p-5">
+                        <div class="text-orange-600 font-bold text-lg mb-2">🅱️ 생각 (Beliefs)</div>
+                        <div class="text-gray-700" id="beliefDisplay">내 수업이 재미없나보다</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-5">
+                        <div class="text-blue-600 font-bold text-lg mb-2">🅲️ 결과 (Consequences)</div>
+                        <div class="text-gray-700" id="consequenceDisplay">속상하고 자신감이 떨어진다</div>
+                    </div>
+                </div>
+
+                <!-- 학생의 조언 -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-6 mb-6">
+                    <div class="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
+                        🎯 학생의 조언
+                    </div>
+                    <div>
+                        <div class="mb-4">
+                            <h4 class="font-semibold mb-2 text-blue-600">💭 생각해볼 점:</h4>
+                            <p class="text-gray-700 leading-relaxed" id="thinkingAdviceDisplay">제가 재미있게 느꼈던 수업은 게임이나 활동이 있었어요. 친구들과 함께 하는 활동이 더 참여하고 싶게 만들어요. 선생님이 웃으면서 격려해주시면 용기가 나요.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2 text-blue-600">🎯 시도해볼 방법:</h4>
+                            <div class="text-gray-700 leading-relaxed" id="helpAdviceDisplay">
+                                1) 손들기 전에 짝과 먼저 이야기해보는 시간 주기<br>
+                                2) 정답이 아니어도 칭찬해주는 분위기 만들기<br>
+                                3) 조별 활동으로 부담 줄여주기
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 격려 메시지 -->
+                <div class="bg-gradient-to-r from-pink-50 to-purple-50 border-2 border-pink-300 rounded-xl p-6 mb-6 text-center">
+                    <div class="text-xl font-bold text-purple-700 mb-3 flex items-center justify-center gap-2">
+                        💌 격려 메시지
+                    </div>
+                    <div class="text-lg italic text-gray-700 font-medium" id="encouragementDisplay">
+                        "선생님의 고민하는 마음 자체가 학생들에 대한 사랑이에요! 💖"
+                    </div>
+                </div>
+
+                <!-- 개인 메시지 -->
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-300 rounded-xl p-6 mb-6">
+                    <div class="text-lg font-bold text-green-700 mb-3">✏️ 개인 메시지</div>
+                    <div class="text-gray-700 leading-relaxed" id="personalMessageDisplay">
+                        선생님, 항상 저희를 생각해주셔서 감사해요. 힘들 때는 저희에게 말씀해주세요. 함께 해결해나가요!
+                    </div>
+                </div>
+
+                <!-- 실천 약속 -->
+                <div class="bg-gradient-to-r from-violet-50 to-purple-50 border-2 border-violet-300 rounded-xl p-6">
+                    <div class="text-xl font-bold text-violet-700 mb-4 flex items-center gap-2">
+                        🤝 우리의 약속
+                    </div>
+                    <div class="space-y-3" id="commitmentsList">
+                        <div class="flex items-center gap-3 bg-white bg-opacity-60 p-3 rounded-lg">
+                            <span class="text-green-500 text-lg">✅</span>
+                            <span class="text-gray-700">우리가 더 적극적으로 참여하도록 노력할게요</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white bg-opacity-60 p-3 rounded-lg">
+                            <span class="text-green-500 text-lg">✅</span>
+                            <span class="text-gray-700">수업 시간에 더 집중하도록 할게요</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white bg-opacity-60 p-3 rounded-lg">
+                            <span class="text-green-500 text-lg">✅</span>
+                            <span class="text-gray-700">선생님께 감사한 마음을 자주 표현할게요</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 푸터 -->
+                <div class="text-center mt-8 pt-6 border-t border-gray-200">
+                    <div class="text-sm text-gray-500">
+                        Made with ❤️ by ABC 교사 상담 도구
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        교사와 학생이 서로의 마음을 이해하는 따뜻한 교실을 만들어갑니다
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 새로 시작하기 -->
+        <div class="text-center mt-8">
+            <button onclick="resetForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-medium transition-colors">
+                🔄 새로운 상담 시작하기
+            </button>
+        </div>
+    </div>
+
+    <!-- 알림 시스템 -->
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <!-- 도움말 버튼 -->
+    <button onclick="showHelp()" class="help-btn fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
+        ❓
+    </button>
+
+    <script>
+        // 샘플 데이터
+        const counselingData = {
+            studentName: "김민수",
+            teacherName: "이영희 선생님",
+            category: "수업 참여",
+            emotion: "😢 속상함",
+            worry: "학생들이 수업 시간에 집중하지 않아서 속상해요. 게임이나 활동을 해도 반응이 별로고, 질문을 해도 대답하는 학생이 거의 없어요.",
+            abc: {
+                fact: "수업 중 학생들이 딴짓을 하거나 떠들었다",
+                belief: "내 수업이 재미없나보다",
+                consequence: "속상하고 자신감이 떨어진다"
+            },
+            advice: {
+                thinking: "제가 재미있게 느꼈던 수업은 게임이나 활동이 있었어요. 친구들과 함께 하는 활동이 더 참여하고 싶게 만들어요. 선생님이 웃으면서 격려해주시면 용기가 나요.",
+                help: "1) 손들기 전에 짝과 먼저 이야기해보는 시간 주기\n2) 정답이 아니어도 칭찬해주는 분위기 만들기\n3) 조별 활동으로 부담 줄여주기"
+            },
+            encouragement: "선생님의 고민하는 마음 자체가 학생들에 대한 사랑이에요! 💖",
+            personalMessage: "선생님, 항상 저희를 생각해주셔서 감사해요. 힘들 때는 저희에게 말씀해주세요. 함께 해결해나가요!",
+            commitments: [
+                "우리가 더 적극적으로 참여하도록 노력할게요",
+                "수업 시간에 더 집중하도록 할게요",
+                "선생님께 감사한 마음을 자주 표현할게요"
+            ]
+        };
+
+        // 알림 표시 함수
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            notification.classList.toggle('error', isError);
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 로딩 상태 관리
+        function setLoading(type, isLoading) {
+            const spinner = document.getElementById(`${type}Spinner`);
+            const text = document.getElementById(`${type}Text`);
+            
+            if (isLoading) {
+                spinner.style.display = 'block';
+                text.style.display = 'none';
+            } else {
+                spinner.style.display = 'none';
+                text.style.display = 'block';
+            }
+        }
+
+        // 이미지로 저장
+        async function downloadAsImage() {
+            try {
+                setLoading('image', true);
+                
+                const resultCard = document.getElementById('resultCard');
+                const canvas = await html2canvas(resultCard, {
+                    scale: 2, // 고해상도
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: null,
+                    logging: false,
+                    width: resultCard.offsetWidth,
+                    height: resultCard.offsetHeight
+                });
+                
+                // 이미지 다운로드
+                const link = document.createElement('a');
+                link.download = `ABC상담결과_${counselingData.studentName}_${new Date().toLocaleDateString('ko-KR')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                showNotification('📷 이미지가 성공적으로 저장되었습니다!');
+                
+            } catch (error) {
+                console.error('이미지 저장 오류:', error);
+                showNotification('❌ 이미지 저장 중 오류가 발생했습니다.', true);
+            } finally {
+                setLoading('image', false);
+            }
+        }
+
+        // PDF로 저장
+        async function downloadAsPDF() {
+            try {
+                setLoading('pdf', true);
+                
+                const resultCard = document.getElementById('resultCard');
+                const canvas = await html2canvas(resultCard, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                
+                // PDF 생성 (A4 사이즈)
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; // A4 width
+                const pageHeight = 295; // A4 height
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                
+                let position = 0;
+                
+                // 첫 페이지
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // 여러 페이지 처리
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // PDF 저장
+                const fileName = `ABC상담결과_${counselingData.studentName}_${new Date().toLocaleDateString('ko-KR')}.pdf`;
+                pdf.save(fileName);
+                
+                showNotification('📄 PDF가 성공적으로 저장되었습니다!');
+                
+            } catch (error) {
+                console.error('PDF 저장 오류:', error);
+                showNotification('❌ PDF 저장 중 오류가 발생했습니다.', true);
+            } finally {
+                setLoading('pdf', false);
+            }
+        }
+
+        // 인쇄하기
+        function printResult() {
+            window.print();
+            showNotification('🖨️ 인쇄 창이 열렸습니다.');
+        }
+
+        // 텍스트로 저장
+        function downloadAsText() {
+            const date = new Date().toLocaleDateString('ko-KR');
+            
+            let content = `ABC 교사 상담 결과\n`;
+            content += `==========================================\n\n`;
+            content += `상담일: ${date}\n`;
+            content += `상담 학생: ${counselingData.studentName}\n`;
+            content += `상담 대상: ${counselingData.teacherName}\n\n`;
+            
+            content += `[고민 분야]\n${counselingData.category}\n\n`;
+            content += `[선택한 감정]\n${counselingData.emotion}\n\n`;
+            content += `[고민 상황]\n${counselingData.worry}\n\n`;
+            
+            content += `[ABC 분석]\n`;
+            content += `A (사실): ${counselingData.abc.fact}\n`;
+            content += `B (생각): ${counselingData.abc.belief}\n`;
+            content += `C (결과): ${counselingData.abc.consequence}\n\n`;
+            
+            content += `[학생의 조언]\n`;
+            content += `생각해볼 점:\n${counselingData.advice.thinking}\n\n`;
+            content += `시도해볼 방법:\n${counselingData.advice.help}\n\n`;
+            
+            content += `[격려 메시지]\n${counselingData.encouragement}\n\n`;
+            content += `[개인 메시지]\n${counselingData.personalMessage}\n\n`;
+            
+            content += `[우리의 약속]\n`;
+            counselingData.commitments.forEach((commitment, index) => {
+                content += `${index + 1}. ${commitment}\n`;
+            });
+            
+            content += `\n==========================================\n`;
+            content += `Made with ❤️ by ABC 교사 상담 도구\n`;
+            content += `교사와 학생이 서로의 마음을 이해하는 따뜻한 교실을 만들어갑니다`;
+            
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ABC상담결과_${counselingData.studentName}_${date}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('📝 텍스트 파일이 저장되었습니다!');
+        }
+
+        // 폼 리셋
+        function resetForm() {
+            if (confirm('새로운 상담을 시작하시겠습니까?')) {
+                showNotification('🔄 새로운 상담을 시작합니다!');
+                // 실제로는 첫 번째 단계로 이동하는 로직이 들어갑니다
+            }
+        }
+
+        // 도움말
+        function showHelp() {
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 새로운 기능들:\n• 📷 이미지로 저장 - 예쁜 카드 형태로 PNG 파일 저장\n• 📄 PDF로 저장 - A4 사이즈로 전문적인 PDF 생성\n• 🖨️ 인쇄하기 - 인쇄 최적화된 스타일로 출력\n• 📝 텍스트로 저장 - 체계적으로 정리된 텍스트 파일\n\n💡 상담 결과를 다양한 형태로 저장하여\n   교실이나 가정에서 활용해보세요!`);
+        }
+
+        // 페이지 로드 시 날짜 설정
+        window.onload = function() {
+            const now = new Date();
+            const dateString = now.toLocaleDateString('ko-KR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('resultDate').textContent = dateString;
+        };
+    </script>
+</body>
+</html>
