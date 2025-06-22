@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC 교사 상담 도구 - 카테고리 우선 선택 버전</title>
+    <title>ABC 교사 상담 도구 - 완전한 카테고리 우선 버전</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
@@ -81,7 +81,7 @@
             border-color: #0ea5e9;
         }
 
-        /* 카테고리별 색상 */
+        /* 카테고리별 배지 색상 */
         .category-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -256,6 +256,22 @@
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
         }
 
+        /* 감정 버튼 스타일 */
+        .emotion-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .emotion-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .emotion-btn.selected {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
         /* 최종 결과 화면 전용 스타일 */
         .final-result-container {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -268,6 +284,12 @@
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+        }
+
+        /* 격려 메시지 카드 */
+        .message-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
         }
 
         /* 알림 시스템 */
@@ -560,7 +582,7 @@
                 </button>
             </div>
 
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6 hidden" id="encouragementCard">
+            <div class="message-card rounded-lg p-6 mb-6 hidden" id="encouragementCard">
                 <h3 class="font-semibold text-yellow-800 mb-3 text-center">💌 뽑힌 격려 메시지</h3>
                 <p id="encouragementText" class="text-gray-800 text-center text-lg font-medium"></p>
             </div>
@@ -568,6 +590,13 @@
             <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-6">
                 <h3 class="font-medium text-pink-700 mb-2">✏️ 개인적인 메시지 추가</h3>
                 <textarea id="personalMessage" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" rows="3" placeholder="선생님께 전하고 싶은 개인적인 응원 메시지를 적어주세요..."></textarea>
+            </div>
+
+            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                <h3 class="font-medium text-indigo-700 mb-3">🤝 실천 약속</h3>
+                <div class="grid md:grid-cols-2 gap-2" id="commitmentOptions">
+                    <!-- 실천 약속 옵션들이 여기에 동적으로 추가됩니다 -->
+                </div>
             </div>
 
             <div class="flex justify-between">
@@ -606,12 +635,18 @@
         <span id="notificationText"></span>
     </div>
 
+    <!-- 도움말 버튼 -->
+    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
+        ❓
+    </button>
+
     <script>
         // 전역 변수
         let currentStep = 1;
         let selectedCategory = null;
         let selectedWorry = null;
         let selectedEmotion = null;
+        let selectedCommitments = [];
 
         // 카테고리별 데이터
         const categoryData = {
@@ -770,6 +805,17 @@
             "선생님만의 특별한 방법이 있을 거예요. 자신감을 가지세요! 💪",
             "실수해도 괜찮아요. 그것도 우리에게는 좋은 배움이에요! 📚",
             "선생님이 있어서 우리 교실이 따뜻해요. 감사해요! 🏠"
+        ];
+
+        const commitmentOptions = [
+            "우리가 더 적극적으로 참여하도록 노력할게요",
+            "선생님이 힘들어하시면 바로 도와드릴게요",
+            "친구들과 사이좋게 지내도록 더 노력할게요",
+            "수업 시간에 더 집중하도록 할게요",
+            "선생님께 감사한 마음을 자주 표현할게요",
+            "교실 정리정돈을 더 잘 할게요",
+            "다른 친구들도 배려하는 마음을 가질게요",
+            "선생님의 새로운 아이디어를 응원할게요"
         ];
 
         // 카테고리 카드 렌더링
@@ -1076,7 +1122,7 @@
             
             emotions.forEach(emotion => {
                 const button = document.createElement('button');
-                button.className = 'bg-white border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-400 transition-all duration-200';
+                button.className = 'emotion-btn bg-white border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-400 transition-all duration-200';
                 button.onclick = () => selectEmotion(emotion);
                 button.innerHTML = `
                     <div class="text-3xl mb-2">${emotion.emoji}</div>
@@ -1089,14 +1135,12 @@
         // 감정 선택
         function selectEmotion(emotion) {
             // 기존 선택 해제
-            document.querySelectorAll('#emotionButtons button').forEach(btn => {
-                btn.classList.remove('border-green-400', 'bg-green-50');
-                btn.classList.add('border-gray-200');
+            document.querySelectorAll('.emotion-btn').forEach(btn => {
+                btn.classList.remove('selected');
             });
             
             // 새 선택 표시
-            event.target.closest('button').classList.remove('border-gray-200');
-            event.target.closest('button').classList.add('border-green-400', 'bg-green-50');
+            event.target.closest('.emotion-btn').classList.add('selected');
             
             selectedEmotion = emotion;
             
@@ -1108,6 +1152,32 @@
             document.getElementById('step4Next').disabled = false;
             
             showNotification('💚 감정이 선택되었습니다!');
+        }
+
+        // 실천 약속 옵션 렌더링
+        function renderCommitmentOptions() {
+            const container = document.getElementById('commitmentOptions');
+            container.innerHTML = '';
+            
+            commitmentOptions.forEach((option, index) => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 cursor-pointer p-2 rounded hover:bg-indigo-50';
+                label.innerHTML = `
+                    <input type="checkbox" value="${index}" onchange="toggleCommitment(${index})" class="rounded">
+                    <span class="text-sm">${option}</span>
+                `;
+                container.appendChild(label);
+            });
+        }
+
+        // 실천 약속 토글
+        function toggleCommitment(index) {
+            const checkbox = event.target;
+            if (checkbox.checked) {
+                selectedCommitments.push(commitmentOptions[index]);
+            } else {
+                selectedCommitments = selectedCommitments.filter(c => c !== commitmentOptions[index]);
+            }
         }
 
         // 격려 메시지 뽑기
@@ -1297,6 +1367,17 @@
                 `;
             }
             
+            if (selectedCommitments.length > 0) {
+                resultHTML += `
+                    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200 mt-4">
+                        <h4 class="font-semibold text-indigo-800 mb-2">🤝 우리의 약속</h4>
+                        <ul class="list-disc list-inside text-gray-700">
+                            ${selectedCommitments.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
             document.getElementById('finalResult').innerHTML = resultHTML;
         }
 
@@ -1345,6 +1426,11 @@
                 content += `[개인 메시지]\n${personalMessage}\n\n`;
             }
             
+            if (selectedCommitments.length > 0) {
+                content += `[우리의 약속]\n`;
+                selectedCommitments.forEach(c => content += `- ${c}\n`);
+            }
+            
             const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1368,10 +1454,16 @@
             }
         }
 
+        // 도움말
+        function showHelp() {
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 카테고리 우선 선택:\n• 먼저 고민 분야를 선택합니다\n• 해당 분야의 예시 상황을 확인합니다\n• 예시 선택 또는 직접 입력합니다\n\n1. 학생과 선생님 이름을 입력합니다\n2. 고민 분야를 선택하고 구체적 상황을 정합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 맞춤형 체크리스트로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 모든 기능을 활용해보세요!`);
+        }
+
         // 초기화
         function init() {
             renderCategoryCards();
             renderEmotionButtons();
+            renderCommitmentOptions();
             
             // 단계 네비게이션 이벤트 리스너
             document.querySelectorAll('.step-btn').forEach(btn => {
