@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC 교사 상담 도구 - 개선 버전</title>
+    <title>ABC 교사 상담 도구 - 최신 업그레이드 버전</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
@@ -39,14 +39,84 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
         }
+
+        /* 🆕 선택된 고민 지속 표시 시스템 */
+        .selected-worry-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #0ea5e9;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(14, 165, 233, 0.15);
+            transform: translateY(0);
+            opacity: 0;
+            animation: slideDown 0.5s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .selected-worry-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .worry-content {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(14, 165, 233, 0.1);
+            color: #0c4a6e;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .auto-classified-badge {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
         
-        /* 단계별 네비게이션 - 🎨 UI 개선 1 */
+        /* 단계별 네비게이션 - 🎨 UI 개선 */
         .step-nav {
             display: flex;
             justify-content: space-between;
             margin-bottom: 24px;
             gap: 8px;
             flex-wrap: wrap;
+            background: white;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
         
         .step-btn {
@@ -114,19 +184,19 @@
         }
         .step6-btn.active { border-color: #8b5cf6; }
 
-        /* ABC 카드 시각화 - 🎨 UI 개선 2 */
+        /* ABC 카드 시각화 - 🎨 UI 개선 */
         .abc-preview {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 24px 0;
         }
         
         .abc-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -143,8 +213,8 @@
         }
         
         .abc-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
         }
         
         .abc-card:hover::before {
@@ -157,8 +227,8 @@
         
         .abc-label {
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -169,111 +239,118 @@
         .abc-c .abc-label { color: #2563eb; }
         
         .abc-example {
-            background: rgba(255, 255, 255, 0.7);
-            padding: 8px;
-            border-radius: 6px;
-            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
             color: #6b7280;
             font-style: italic;
-            margin-top: 8px;
+            margin-top: 12px;
+            border-left: 3px solid currentColor;
         }
 
         /* 체크리스트 개선 - 📝 체크리스트 적용 */
         .checklist-section {
             background: rgba(139, 92, 246, 0.03);
             border: 2px solid rgba(139, 92, 246, 0.1);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
             transition: all 0.3s ease;
         }
 
         .checklist-section:hover {
             border-color: rgba(139, 92, 246, 0.2);
             background: rgba(139, 92, 246, 0.05);
+            transform: translateY(-2px);
         }
 
         .checklist-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 12px;
         }
 
         .checklist-title {
             font-weight: bold;
             color: #7c3aed;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .apply-btn {
             background: linear-gradient(135deg, #8b5cf6, #a78bfa);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(139, 92, 246, 0.2);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
             white-space: nowrap;
         }
 
         .apply-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
         }
 
         .apply-btn.help-apply {
             background: linear-gradient(135deg, #06b6d4, #67e8f9);
-            box-shadow: 0 2px 4px rgba(6, 182, 212, 0.2);
+            box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
         }
 
         .apply-btn.help-apply:hover {
-            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
         }
 
         .checklist-item {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            padding: 8px;
-            border-radius: 8px;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 10px;
             transition: all 0.2s ease;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
             cursor: pointer;
         }
         
         .checklist-item:hover {
             background: rgba(139, 92, 246, 0.05);
+            transform: translateX(4px);
         }
         
         .checklist-item input[type="checkbox"] {
             margin: 0;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             margin-top: 2px;
             cursor: pointer;
+            accent-color: #8b5cf6;
         }
         
         .checklist-item label {
             flex: 1;
             cursor: pointer;
-            line-height: 1.4;
+            line-height: 1.5;
             color: #4b5563;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
         /* 스마트 분류 안내 */
         .smart-classification {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
             border: 2px solid #0ea5e9;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 16px 0;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
             position: relative;
             overflow: hidden;
         }
@@ -281,41 +358,48 @@
         .smart-classification::before {
             content: '🤖';
             position: absolute;
-            right: 16px;
-            top: 16px;
-            font-size: 2rem;
+            right: 20px;
+            top: 20px;
+            font-size: 2.5rem;
             opacity: 0.7;
         }
 
         .category-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 16px;
         }
 
         .category-tag {
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
         }
 
-        /* 알림 시스템 */
+        .category-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 알림 시스템 - 향상된 토스트 */
         .notification {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 24px;
+            right: 24px;
             background: linear-gradient(135deg, #10b981, #34d399);
             color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            padding: 16px 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 1000;
-            max-width: 300px;
+            max-width: 320px;
+            backdrop-filter: blur(10px);
         }
         
         .notification.show {
@@ -323,43 +407,106 @@
             opacity: 1;
         }
 
+        .notification.error {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        }
+
+        /* 감정 버튼 개선 */
         .emotion-btn {
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
         }
         
         .emotion-btn:hover {
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: #10b981;
         }
         
         .emotion-btn.selected {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
             color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
         }
         
+        /* 상황 카드 개선 */
         .situation-card {
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             background: white;
             border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
         }
         
         .situation-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
         }
         
         .situation-card.selected {
             background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             border-color: #3b82f6;
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.2);
         }
 
-        /* 반응형 디자인 */
+        /* 고민 카드 개선 */
+        .worry-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px;
+            text-center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .worry-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+
+        .worry-card.selected {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        }
+
+        /* 개선된 메시지 카드 */
+        .message-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-card::before {
+            content: '✨';
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        /* 반응형 디자인 개선 */
         @media (max-width: 768px) {
             .step-nav {
                 flex-direction: column;
-                gap: 4px;
+                gap: 8px;
+                padding: 12px;
             }
             
             .step-btn {
@@ -370,6 +517,7 @@
 
             .abc-preview {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
 
             .checklist-header {
@@ -380,6 +528,38 @@
             .apply-btn {
                 width: 100%;
             }
+
+            .selected-worry-card {
+                padding: 16px;
+                margin-bottom: 20px;
+            }
+
+            .category-badge {
+                font-size: 0.8rem;
+                padding: 4px 10px;
+            }
+        }
+
+        /* 접근성 개선 */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* 포커스 개선 */
+        .step-btn:focus,
+        .emotion-btn:focus,
+        .situation-card:focus,
+        .worry-card:focus {
+            outline: 3px solid #3b82f6;
+            outline-offset: 2px;
         }
         
         @keyframes fadeIn {
@@ -391,9 +571,12 @@
             animation: fadeIn 0.5s ease;
         }
 
-        .message-card {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border: 2px solid #f59e0b;
+        /* 다크모드 대응 준비 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1f2937;
+                --text-primary: #f9fafb;
+            }
         }
     </style>
 </head>
@@ -404,13 +587,13 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 스마트 분류 & 체크리스트 적용 기능이 추가된 개선 버전
+                ✨ 🆕 고민 지속 표시 & 스마트 분류 & 체크리스트 적용 기능 포함
             </div>
         </div>
 
         <!-- 🎨 개선된 단계별 네비게이션 -->
-        <nav class="step-nav">
-            <button class="step-btn step1-btn active" data-step="1">
+        <nav class="step-nav" role="navigation" aria-label="상담 단계">
+            <button class="step-btn step1-btn active" data-step="1" aria-current="step">
                 1️⃣ 기본정보<br>
                 <span class="text-xs opacity-75">이름 입력</span>
             </button>
@@ -436,17 +619,43 @@
             </button>
         </nav>
 
+        <!-- 🆕 선택된 고민 지속 표시 카드 (3단계부터) -->
+        <div class="selected-worry-card hidden" id="selectedWorryCard" role="region" aria-label="선택된 고민 정보">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2">
+                    📋 선택된 고민 정보
+                </h3>
+                <div class="flex gap-2">
+                    <span class="category-badge" id="categoryBadge">
+                        📚 수업 참여
+                    </span>
+                    <span class="category-badge auto-classified-badge hidden" id="autoClassifiedBadge">
+                        🤖 자동분류
+                    </span>
+                </div>
+            </div>
+            <div class="worry-content">
+                <p class="text-gray-800 font-medium" id="worryContentText">
+                    선택된 고민이 여기에 표시됩니다.
+                </p>
+                <div class="mt-3 text-sm text-gray-600" id="worryDetails">
+                    <span class="font-semibold">학생:</span> <span id="displayStudentName">-</span> |
+                    <span class="font-semibold">선생님:</span> <span id="displayTeacherName">-</span>
+                </div>
+            </div>
+        </div>
+
         <!-- 단계 1: 기본 정보 입력 -->
         <div class="step-card active border-2 rounded-lg p-6 mb-6" id="step1">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">1️⃣ 기본 정보를 입력해주세요</h2>
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">👦 상담하는 학생 이름</label>
-                    <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="김민수">
+                    <label for="studentName" class="block text-sm font-medium text-gray-700 mb-2">👦 상담하는 학생 이름</label>
+                    <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="김민수" autocomplete="name">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">👩‍🏫 상담받는 선생님 이름</label>
-                    <input type="text" id="teacherName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="이영희 선생님">
+                    <label for="teacherName" class="block text-sm font-medium text-gray-700 mb-2">👩‍🏫 상담받는 선생님 이름</label>
+                    <input type="text" id="teacherName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="이영희 선생님" autocomplete="name">
                 </div>
             </div>
             <div class="mt-6 text-right">
@@ -687,13 +896,13 @@
         </div>
     </div>
 
-    <!-- 알림 시스템 -->
+    <!-- 향상된 알림 시스템 -->
     <div id="notification" class="notification">
         <span id="notificationText"></span>
     </div>
 
     <!-- 도움말 버튼 -->
-    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
+    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50" aria-label="도움말">
         ❓
     </button>
 
@@ -881,10 +1090,63 @@
             "선생님의 새로운 아이디어를 응원할게요"
         ];
 
-        // 알림 표시 함수
-        function showNotification(message) {
+        // 🆕 선택된 고민 지속 표시 함수
+        function updateSelectedWorryDisplay() {
+            if (selectedWorry && currentStep >= 3) {
+                const worryCard = document.getElementById('selectedWorryCard');
+                const categoryBadge = document.getElementById('categoryBadge');
+                const autoClassifiedBadge = document.getElementById('autoClassifiedBadge');
+                const worryContentText = document.getElementById('worryContentText');
+                const displayStudentName = document.getElementById('displayStudentName');
+                const displayTeacherName = document.getElementById('displayTeacherName');
+
+                // 고민 내용 표시
+                worryContentText.textContent = selectedWorry.case.text;
+                
+                // 카테고리 표시
+                const finalCategory = detectedCategory || selectedCategory;
+                const categoryEmoji = {
+                    '수업 참여': '📚',
+                    '학급 관리': '👥',
+                    '학습 지도': '📖',
+                    '학부모 관계': '👨‍👩‍👧‍👦',
+                    '업무 스트레스': '💼'
+                };
+                
+                categoryBadge.innerHTML = `${categoryEmoji[finalCategory]} ${finalCategory}`;
+                
+                // 자동 분류 배지 표시
+                if (detectedCategory && detectedCategory !== selectedCategory) {
+                    autoClassifiedBadge.classList.remove('hidden');
+                } else {
+                    autoClassifiedBadge.classList.add('hidden');
+                }
+                
+                // 이름 표시
+                displayStudentName.textContent = document.getElementById('studentName').value || '-';
+                displayTeacherName.textContent = document.getElementById('teacherName').value || '-';
+                
+                // 카드 표시
+                worryCard.classList.remove('hidden');
+            } else {
+                document.getElementById('selectedWorryCard').classList.add('hidden');
+            }
+        }
+
+        // 향상된 알림 표시 함수
+        function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             const text = document.getElementById('notificationText');
+            
+            // 이전 클래스 제거
+            notification.classList.remove('error', 'warning');
+            
+            // 타입에 따른 클래스 추가
+            if (type === 'error') {
+                notification.classList.add('error');
+            } else if (type === 'warning') {
+                notification.classList.add('warning');
+            }
             
             text.textContent = message;
             notification.classList.add('show');
@@ -921,7 +1183,7 @@
                 showNotification('💭 선택한 생각들이 적용되었습니다!');
                 updateAdvicePreview();
             } else {
-                showNotification('❗ 적용할 항목을 선택해주세요!');
+                showNotification('❗ 적용할 항목을 선택해주세요!', 'warning');
             }
         }
         
@@ -954,7 +1216,7 @@
                 showNotification('🎯 선택한 방법들이 적용되었습니다!');
                 updateAdvicePreview();
             } else {
-                showNotification('❗ 적용할 항목을 선택해주세요!');
+                showNotification('❗ 적용할 항목을 선택해주세요!', 'warning');
             }
         }
 
@@ -974,6 +1236,10 @@
                     }
                 });
             });
+
+            // 입력 필드 실시간 업데이트
+            document.getElementById('studentName').addEventListener('input', updateSelectedWorryDisplay);
+            document.getElementById('teacherName').addEventListener('input', updateSelectedWorryDisplay);
         }
 
         // 고민 카테고리 렌더링
@@ -983,7 +1249,7 @@
             
             Object.keys(worryCases).forEach(category => {
                 const div = document.createElement('div');
-                div.className = 'worry-card bg-white border-2 border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-all duration-200';
+                div.className = 'worry-card';
                 div.onclick = () => selectWorryCategory(category);
                 div.innerHTML = `
                     <h3 class="font-semibold text-gray-800 mb-2">${category}</h3>
@@ -1000,7 +1266,7 @@
             
             emotions.forEach(emotion => {
                 const button = document.createElement('button');
-                button.className = 'emotion-btn bg-white border-2 border-gray-200 rounded-lg p-4 text-center hover:border-green-400 transition-all duration-200';
+                button.className = 'emotion-btn';
                 button.onclick = () => selectEmotion(emotion);
                 button.innerHTML = `
                     <div class="text-3xl mb-2">${emotion.emoji}</div>
@@ -1060,13 +1326,11 @@
         function selectWorryCategory(category) {
             // 기존 선택 해제
             document.querySelectorAll('.worry-card').forEach(card => {
-                card.classList.remove('border-blue-400', 'bg-blue-50');
-                card.classList.add('border-gray-200');
+                card.classList.remove('selected');
             });
             
             // 새 선택 표시
-            event.target.closest('.worry-card').classList.remove('border-gray-200');
-            event.target.closest('.worry-card').classList.add('border-blue-400', 'bg-blue-50');
+            event.target.closest('.worry-card').classList.add('selected');
             
             selectedCategory = category;
             
@@ -1089,7 +1353,7 @@
             
             worryCases[category].forEach((situation, index) => {
                 const div = document.createElement('div');
-                div.className = 'situation-card rounded-lg p-4 cursor-pointer';
+                div.className = 'situation-card';
                 div.onclick = () => selectSpecificSituation(category, situation, index);
                 div.innerHTML = `
                     <div class="flex items-start space-x-3">
@@ -1185,8 +1449,7 @@
             
             // 카테고리 선택 해제
             document.querySelectorAll('.worry-card').forEach(card => {
-                card.classList.remove('border-blue-400', 'bg-blue-50');
-                card.classList.add('border-gray-200');
+                card.classList.remove('selected');
             });
         }
 
@@ -1296,6 +1559,9 @@
             
             currentStep = targetStep;
             
+            // 🆕 선택된 고민 지속 표시 업데이트
+            updateSelectedWorryDisplay();
+            
             showNotification(`📍 ${targetStep}단계로 이동했습니다!`);
         }
 
@@ -1306,7 +1572,7 @@
                 const studentName = document.getElementById('studentName').value.trim();
                 const teacherName = document.getElementById('teacherName').value.trim();
                 if (!studentName || !teacherName) {
-                    showNotification('❗ 학생 이름과 선생님 이름을 모두 입력해주세요.');
+                    showNotification('❗ 학생 이름과 선생님 이름을 모두 입력해주세요.', 'error');
                     return;
                 }
             }
@@ -1314,7 +1580,7 @@
             if (step === 2) {
                 const customWorry = document.getElementById('customWorry').value.trim();
                 if (!selectedWorry && !customWorry) {
-                    showNotification('❗ 구체적인 상황을 선택하거나 직접 입력해주세요.');
+                    showNotification('❗ 구체적인 상황을 선택하거나 직접 입력해주세요.', 'error');
                     return;
                 }
                 
@@ -1341,7 +1607,7 @@
                 }
                 
                 if (!selectedWorry) {
-                    showNotification('❗ 고민 분야를 먼저 선택해주세요.');
+                    showNotification('❗ 고민 분야를 먼저 선택해주세요.', 'error');
                     return;
                 }
             }
@@ -1501,7 +1767,7 @@
 
         // 도움말
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 기능들을 활용해보세요!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🆕 최신 업그레이드 기능들:\n• 🆕 선택된 고민 지속 표시 (3단계부터)\n• 🎨 개선된 단계별 네비게이션\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 향상된 반응형 디자인\n• 접근성 개선\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다 (고민 정보 지속 표시)\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 UX 개선사항들을 체험해보세요!`);
         }
 
         // 페이지 로드 시 초기화
