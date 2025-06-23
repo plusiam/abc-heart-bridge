@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABC 교사 상담 도구 - 최신 업그레이드 버전</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 이미지 저장을 위한 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- PDF 저장을 위한 라이브러리 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
         
@@ -534,6 +538,74 @@
             border-radius: 4px;
         }
 
+        /* 🆕 인쇄 최적화 CSS */
+        @media print {
+            body {
+                font-size: 12pt;
+                line-height: 1.3;
+                color: #000;
+                background: white;
+            }
+            
+            .step-nav,
+            .fixed,
+            button,
+            .notification,
+            .no-print {
+                display: none !important;
+            }
+            
+            .step-card {
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+                border: 1px solid #ccc;
+                box-shadow: none;
+                background: white;
+            }
+            
+            .selected-worry-card {
+                page-break-inside: avoid;
+                border: 2px solid #0ea5e9;
+                background: #f0f9ff;
+                margin-bottom: 15px;
+            }
+            
+            .advice-preview-enhanced {
+                page-break-inside: avoid;
+                border: 1px solid #ddd;
+                background: #f8f9fa;
+                margin: 15px 0;
+            }
+            
+            .checklist-section {
+                page-break-inside: avoid;
+                border: 1px solid #ddd;
+                background: #f9f9ff;
+                margin: 10px 0;
+            }
+            
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            
+            .final-result-container {
+                page-break-inside: avoid;
+            }
+            
+            /* 그라디언트 색상을 단색으로 변경 */
+            .bg-gradient-to-r {
+                background: #e3f2fd !important;
+            }
+        }
+
+        /* �새 캡처용 스타일 */
+        .capture-container {
+            background: white;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         /* 반응형 디자인 개선 */
         @media (max-width: 768px) {
             .step-nav {
@@ -611,6 +683,23 @@
                 --text-primary: #f9fafb;
             }
         }
+
+        /* 🆕 로딩 스피너 */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -620,12 +709,12 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 🆕 실시간 미리보기 & 고민 지속 표시 & 스마트 분류 & 체크리스트 적용 기능 포함
+                ✨ 🆕 실시간 미리보기 & 이미지/PDF 저장 & 인쇄 최적화 기능 포함
             </div>
         </div>
 
         <!-- 🎨 개선된 단계별 네비게이션 -->
-        <nav class="step-nav" role="navigation" aria-label="상담 단계">
+        <nav class="step-nav no-print" role="navigation" aria-label="상담 단계">
             <button class="step-btn step1-btn active" data-step="1" aria-current="step">
                 1️⃣ 기본정보<br>
                 <span class="text-xs opacity-75">이름 입력</span>
@@ -927,18 +1016,27 @@
         <div class="step-card border-2 rounded-lg p-6 mb-6 hidden" id="step7">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">🎉 상담이 완료되었습니다!</h2>
             
-            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6" id="finalResult">
+            <div class="final-result-container bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6" id="finalResult">
                 <!-- 최종 결과가 여기에 표시됩니다 -->
             </div>
 
-            <div class="grid md:grid-cols-3 gap-4 mb-6">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 no-print">
                 <button onclick="saveAsText()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                     📄 텍스트로 저장
+                </button>
+                <button onclick="saveAsPDF()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    📋 PDF로 저장
+                </button>
+                <button onclick="saveAsImage()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    🖼️ 이미지로 저장
                 </button>
                 <button onclick="printResult()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                     🖨️ 인쇄하기
                 </button>
-                <button onclick="resetForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+            </div>
+
+            <div class="text-center no-print">
+                <button onclick="resetForm()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                     🔄 새로 시작하기
                 </button>
             </div>
@@ -951,7 +1049,7 @@
     </div>
 
     <!-- 도움말 버튼 -->
-    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50" aria-label="도움말">
+    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50 no-print" aria-label="도움말">
         ❓
     </button>
 
@@ -1452,6 +1550,107 @@
                         updateCharacterCounter('help');
                     }, 10);
                 });
+            }
+        }
+
+        // 🆕 이미지로 저장하기
+        async function saveAsImage() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            try {
+                // 로딩 상태 표시
+                btn.innerHTML = '<div class="spinner"></div>이미지 생성 중...';
+                btn.disabled = true;
+                
+                // 캡처할 영역 선택
+                const finalResult = document.getElementById('finalResult');
+                
+                // html2canvas 옵션 설정
+                const canvas = await html2canvas(finalResult, {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // 고해상도
+                    useCORS: true,
+                    allowTaint: true,
+                    scrollX: 0,
+                    scrollY: 0,
+                    width: finalResult.scrollWidth,
+                    height: finalResult.scrollHeight
+                });
+                
+                // 이미지 다운로드
+                const link = document.createElement('a');
+                link.download = `ABC상담결과_${document.getElementById('studentName').value}_${new Date().toLocaleDateString('ko-KR')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                showNotification('🖼️ 이미지 파일이 다운로드되었습니다!');
+                
+            } catch (error) {
+                console.error('이미지 저장 오류:', error);
+                showNotification('❗ 이미지 저장 중 오류가 발생했습니다.', 'error');
+            } finally {
+                // 버튼 원래 상태로 복구
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // 🆕 PDF로 저장하기
+        async function saveAsPDF() {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            try {
+                // 로딩 상태 표시
+                btn.innerHTML = '<div class="spinner"></div>PDF 생성 중...';
+                btn.disabled = true;
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                // 캡처할 영역
+                const finalResult = document.getElementById('finalResult');
+                
+                // html2canvas로 이미지 생성
+                const canvas = await html2canvas(finalResult, {
+                    backgroundColor: '#ffffff',
+                    scale: 1.5,
+                    useCORS: true
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190; // A4 용지 폭에 맞춤 (여백 고려)
+                const pageHeight = 297; // A4 용지 높이
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10; // 상단 여백
+                
+                // 첫 페이지에 이미지 추가
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // 이미지가 한 페이지를 넘어가면 추가 페이지 생성
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // PDF 다운로드
+                const fileName = `ABC상담결과_${document.getElementById('studentName').value}_${new Date().toLocaleDateString('ko-KR')}.pdf`;
+                pdf.save(fileName);
+                
+                showNotification('📋 PDF 파일이 다운로드되었습니다!');
+                
+            } catch (error) {
+                console.error('PDF 저장 오류:', error);
+                showNotification('❗ PDF 저장 중 오류가 발생했습니다.', 'error');
+            } finally {
+                // 버튼 원래 상태로 복구
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
@@ -1985,7 +2184,7 @@
 
         // 도움말
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🆕 최신 업그레이드 기능들:\n• 🆕 실시간 미리보기 업데이트\n• 🆕 선택된 고민 지속 표시 (3단계부터)\n• 🎨 개선된 단계별 네비게이션\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 향상된 반응형 디자인\n• 접근성 개선\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다 (고민 정보 지속 표시)\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 실시간 미리보기 기능을 체험해보세요!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🆕 최신 업그레이드 기능들:\n• 🆕 실시간 미리보기 업데이트\n• 🖼️ 이미지로 저장 기능\n• 📋 PDF로 저장 기능\n• 🖨️ 인쇄 최적화\n• 🆕 선택된 고민 지속 표시 (3단계부터)\n• 🎨 개선된 단계별 네비게이션\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 향상된 반응형 디자인\n• 접근성 개선\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다 (고민 정보 지속 표시)\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 텍스트/PDF/이미지로 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 저장 및 인쇄 최적화 기능을 체험해보세요!`);
         }
 
         // 페이지 로드 시 초기화
