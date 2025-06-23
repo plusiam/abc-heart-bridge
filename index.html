@@ -501,6 +501,39 @@
             opacity: 0.7;
         }
 
+        /* 🆕 글자수 카운터 스타일 */
+        .character-counter {
+            text-align: right;
+            margin-top: 4px;
+            font-size: 0.75rem;
+            transition: color 0.3s ease;
+        }
+
+        /* 🆕 미리보기 개선 스타일 */
+        .advice-preview-enhanced {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .completeness-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .completeness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
         /* 반응형 디자인 개선 */
         @media (max-width: 768px) {
             .step-nav {
@@ -587,7 +620,7 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 🆕 고민 지속 표시 & 스마트 분류 & 체크리스트 적용 기능 포함
+                ✨ 🆕 실시간 미리보기 & 고민 지속 표시 & 스마트 분류 & 체크리스트 적용 기능 포함
             </div>
         </div>
 
@@ -812,7 +845,13 @@
                     <div id="thinkingChecklist" class="space-y-2">
                         <!-- 생각 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..."></textarea>
+                    <textarea id="thinking-textarea" 
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" 
+                              rows="4" 
+                              placeholder="생각해볼 점들이 여기에 추가됩니다..."
+                              oninput="updateAdvicePreview()"
+                              onpaste="setTimeout(updateAdvicePreview, 10)"></textarea>
+                    <div class="character-counter" id="thinking-counter">0자</div>
                 </div>
                 
                 <!-- 📝 체크리스트 적용 기능 - 행동 아이디어 -->
@@ -826,12 +865,22 @@
                     <div id="helpChecklist" class="space-y-2">
                         <!-- 행동 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..."></textarea>
+                    <textarea id="help-textarea" 
+                              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" 
+                              rows="4" 
+                              placeholder="행동 아이디어들이 여기에 추가됩니다..."
+                              oninput="updateAdvicePreview()"
+                              onpaste="setTimeout(updateAdvicePreview, 10)"></textarea>
+                    <div class="character-counter" id="help-counter">0자</div>
                 </div>
             </div>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 hidden" id="advicePreview">
-                <h3 class="font-medium text-blue-700 mb-2">📝 생성된 조언</h3>
+            <!-- 🆕 향상된 조언 미리보기 -->
+            <div class="advice-preview-enhanced hidden" id="advicePreview">
+                <h3 class="font-medium text-blue-700 mb-3 flex items-center gap-2">
+                    📝 생성된 조언
+                    <span class="text-xs bg-blue-100 px-2 py-1 rounded-full text-blue-600" id="adviceItemCount">0개 항목</span>
+                </h3>
                 <div id="adviceText" class="text-gray-700"></div>
             </div>
 
@@ -1156,6 +1205,117 @@
             }, 3000);
         }
 
+        // 🆕 향상된 조언 미리보기 업데이트 함수
+        function updateAdvicePreview() {
+            const thinkingText = document.getElementById('thinking-textarea')?.value || '';
+            const helpText = document.getElementById('help-textarea')?.value || '';
+            
+            // 미리보기 영역
+            const advicePreview = document.getElementById('advicePreview');
+            const adviceTextElement = document.getElementById('adviceText');
+            const adviceItemCount = document.getElementById('adviceItemCount');
+            
+            if (thinkingText.trim() || helpText.trim()) {
+                let adviceHTML = '';
+                let totalItems = 0;
+                
+                if (thinkingText.trim()) {
+                    const thinkingItems = thinkingText.split('.').filter(s => s.trim().length > 5);
+                    totalItems += thinkingItems.length;
+                    
+                    adviceHTML += `
+                        <div class="mb-4">
+                            <h4 class="font-semibold mb-2 text-purple-700 flex items-center gap-2">
+                                💭 생각해볼 점:
+                                <span class="text-xs bg-purple-100 px-2 py-1 rounded-full text-purple-600">
+                                    ${thinkingItems.length}개 항목
+                                </span>
+                            </h4>
+                            <div class="bg-purple-50 p-3 rounded-lg border-l-4 border-purple-300">
+                                <p class="text-gray-700 leading-relaxed">${thinkingText.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                if (helpText.trim()) {
+                    const helpItems = helpText.split('\n').filter(s => s.trim().length > 3);
+                    totalItems += helpItems.length;
+                    
+                    adviceHTML += `
+                        <div class="mb-4">
+                            <h4 class="font-semibold mb-2 text-cyan-700 flex items-center gap-2">
+                                🎯 시도해볼 방법:
+                                <span class="text-xs bg-cyan-100 px-2 py-1 rounded-full text-cyan-600">
+                                    ${helpItems.length}개 방법
+                                </span>
+                            </h4>
+                            <div class="bg-cyan-50 p-3 rounded-lg border-l-4 border-cyan-300">
+                                <div class="text-gray-700 leading-relaxed">${helpText.replace(/\n/g, '<br>')}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // 조언 완성도 표시
+                const completeness = calculateAdviceCompleteness(thinkingText, helpText);
+                adviceHTML += `
+                    <div class="mt-4 p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-semibold text-green-700">조언 완성도</span>
+                            <span class="text-sm font-bold text-green-800">${completeness}%</span>
+                        </div>
+                        <div class="completeness-bar">
+                            <div class="completeness-fill" style="width: ${completeness}%"></div>
+                        </div>
+                        ${completeness < 70 ? 
+                            '<p class="text-xs text-amber-600 mt-2">💡 더 구체적인 조언을 추가해보세요!</p>' : 
+                            '<p class="text-xs text-green-600 mt-2">✅ 훌륭한 조언이 완성되었습니다!</p>'
+                        }
+                    </div>
+                `;
+                
+                adviceTextElement.innerHTML = adviceHTML;
+                adviceItemCount.textContent = `${totalItems}개 항목`;
+                advicePreview.classList.remove('hidden');
+                
+                // 부드러운 애니메이션
+                advicePreview.style.opacity = '0';
+                advicePreview.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    advicePreview.style.transition = 'all 0.3s ease';
+                    advicePreview.style.opacity = '1';
+                    advicePreview.style.transform = 'translateY(0)';
+                }, 10);
+                
+            } else {
+                advicePreview.classList.add('hidden');
+            }
+        }
+
+        // 🆕 조언 완성도 계산 함수
+        function calculateAdviceCompleteness(thinking, help) {
+            let score = 0;
+            
+            // 생각해볼 점 점수 (최대 40점)
+            if (thinking.trim()) {
+                const thinkingItems = thinking.split('.').filter(s => s.trim().length > 10);
+                score += Math.min(thinkingItems.length * 10, 40);
+            }
+            
+            // 행동 아이디어 점수 (최대 40점)
+            if (help.trim()) {
+                const helpItems = help.split('\n').filter(s => s.trim().length > 5);
+                score += Math.min(helpItems.length * 8, 40);
+            }
+            
+            // 길이 보너스 (최대 20점)
+            const totalLength = thinking.length + help.length;
+            if (totalLength > 100) score += Math.min((totalLength - 100) / 10, 20);
+            
+            return Math.min(Math.round(score), 100);
+        }
+
         // 📝 체크리스트 적용 함수들
         function applyThinkingChecklist() {
             const checkedItems = [];
@@ -1168,10 +1328,10 @@
             
             if (checkedItems.length > 0) {
                 const textarea = document.getElementById('thinking-textarea');
-                const currentText = textarea.value;
+                const currentText = textarea.value.trim();
                 const newText = checkedItems.join('. ') + '.';
                 
-                if (currentText.trim()) {
+                if (currentText) {
                     textarea.value = currentText + '\n\n' + newText;
                 } else {
                     textarea.value = newText;
@@ -1180,8 +1340,19 @@
                 // 체크박스 초기화
                 document.querySelectorAll('#thinkingChecklist input[type="checkbox"]').forEach(cb => cb.checked = false);
                 
-                showNotification('💭 선택한 생각들이 적용되었습니다!');
+                // 실시간 미리보기 업데이트
                 updateAdvicePreview();
+                
+                // 글자수 카운터 업데이트
+                updateCharacterCounter('thinking');
+                
+                // 성공 알림
+                showNotification('💭 선택한 생각들이 적용되었습니다!');
+                
+                // 텍스트 영역에 포커스 및 스크롤
+                textarea.focus();
+                textarea.scrollTop = textarea.scrollHeight;
+                
             } else {
                 showNotification('❗ 적용할 항목을 선택해주세요!', 'warning');
             }
@@ -1201,10 +1372,10 @@
             
             if (checkedItems.length > 0) {
                 const textarea = document.getElementById('help-textarea');
-                const currentText = textarea.value;
+                const currentText = textarea.value.trim();
                 const newText = checkedItems.join('\n');
                 
-                if (currentText.trim()) {
+                if (currentText) {
                     textarea.value = currentText + '\n\n' + newText;
                 } else {
                     textarea.value = newText;
@@ -1213,10 +1384,74 @@
                 // 체크박스 초기화
                 document.querySelectorAll('#helpChecklist input[type="checkbox"]').forEach(cb => cb.checked = false);
                 
-                showNotification('🎯 선택한 방법들이 적용되었습니다!');
+                // 실시간 미리보기 업데이트
                 updateAdvicePreview();
+                
+                // 글자수 카운터 업데이트
+                updateCharacterCounter('help');
+                
+                // 성공 알림
+                showNotification('🎯 선택한 방법들이 적용되었습니다!');
+                
+                // 텍스트 영역에 포커스 및 스크롤
+                textarea.focus();
+                textarea.scrollTop = textarea.scrollHeight;
+                
             } else {
                 showNotification('❗ 적용할 항목을 선택해주세요!', 'warning');
+            }
+        }
+
+        // 🆕 글자수 카운터 업데이트
+        function updateCharacterCounter(type) {
+            const textarea = document.getElementById(`${type}-textarea`);
+            const counter = document.getElementById(`${type}-counter`);
+            
+            if (textarea && counter) {
+                const count = textarea.value.length;
+                counter.textContent = `${count}자`;
+                
+                // 글자수에 따른 색상 변경
+                if (count > 500) {
+                    counter.style.color = '#ef4444'; // 빨간색
+                } else if (count > 300) {
+                    counter.style.color = '#f59e0b'; // 주황색
+                } else {
+                    counter.style.color = '#6b7280'; // 회색
+                }
+            }
+        }
+
+        // 🆕 실시간 이벤트 리스너 초기화
+        function initializeTextareaListeners() {
+            // 생각해볼 점 textarea
+            const thinkingTextarea = document.getElementById('thinking-textarea');
+            if (thinkingTextarea) {
+                thinkingTextarea.addEventListener('input', () => {
+                    updateAdvicePreview();
+                    updateCharacterCounter('thinking');
+                });
+                thinkingTextarea.addEventListener('paste', () => {
+                    setTimeout(() => {
+                        updateAdvicePreview();
+                        updateCharacterCounter('thinking');
+                    }, 10);
+                });
+            }
+            
+            // 행동 아이디어 textarea
+            const helpTextarea = document.getElementById('help-textarea');
+            if (helpTextarea) {
+                helpTextarea.addEventListener('input', () => {
+                    updateAdvicePreview();
+                    updateCharacterCounter('help');
+                });
+                helpTextarea.addEventListener('paste', () => {
+                    setTimeout(() => {
+                        updateAdvicePreview();
+                        updateCharacterCounter('help');
+                    }, 10);
+                });
             }
         }
 
@@ -1226,6 +1461,9 @@
             renderEmotionButtons();
             renderCommitmentOptions();
             loadSituationBasedChecklists('수업 참여'); // 기본 체크리스트 로드
+            
+            // 🆕 실시간 이벤트 리스너 초기화
+            initializeTextareaListeners();
             
             // 단계 네비게이션 이벤트 리스너
             document.querySelectorAll('.step-btn').forEach(btn => {
@@ -1482,31 +1720,6 @@
             showNotification('💚 감정이 선택되었습니다!');
         }
 
-        // 조언 미리보기 업데이트
-        function updateAdvicePreview() {
-            const thinkingText = document.getElementById('thinking-textarea')?.value || '';
-            const helpText = document.getElementById('help-textarea')?.value || '';
-            
-            if (thinkingText || helpText) {
-                let adviceHTML = '';
-                
-                if (thinkingText) {
-                    adviceHTML += '<h4 class="font-semibold mb-2">💭 생각해볼 점:</h4>';
-                    adviceHTML += `<p class="mb-4">${thinkingText}</p>`;
-                }
-                
-                if (helpText) {
-                    adviceHTML += '<h4 class="font-semibold mb-2">🎯 시도해볼 방법:</h4>';
-                    adviceHTML += `<p>${helpText.replace(/\n/g, '<br>')}</p>`;
-                }
-                
-                document.getElementById('adviceText').innerHTML = adviceHTML;
-                document.getElementById('advicePreview').classList.remove('hidden');
-            } else {
-                document.getElementById('advicePreview').classList.add('hidden');
-            }
-        }
-
         // 격려 메시지 뽑기
         function drawEncouragementMessage() {
             const randomIndex = Math.floor(Math.random() * encouragementMessages.length);
@@ -1610,6 +1823,11 @@
                     showNotification('❗ 고민 분야를 먼저 선택해주세요.', 'error');
                     return;
                 }
+            }
+            
+            // 6단계에서 완성하기 버튼을 누르면 7단계로 이동하면서 최종 결과 생성
+            if (step === 6) {
+                generateFinalResult();
             }
             
             goToStep(step + 1);
@@ -1767,7 +1985,7 @@
 
         // 도움말
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🆕 최신 업그레이드 기능들:\n• 🆕 선택된 고민 지속 표시 (3단계부터)\n• 🎨 개선된 단계별 네비게이션\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 향상된 반응형 디자인\n• 접근성 개선\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다 (고민 정보 지속 표시)\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 UX 개선사항들을 체험해보세요!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🆕 최신 업그레이드 기능들:\n• 🆕 실시간 미리보기 업데이트\n• 🆕 선택된 고민 지속 표시 (3단계부터)\n• 🎨 개선된 단계별 네비게이션\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 향상된 반응형 디자인\n• 접근성 개선\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다 (고민 정보 지속 표시)\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 새로운 실시간 미리보기 기능을 체험해보세요!`);
         }
 
         // 페이지 로드 시 초기화
