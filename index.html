@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC 교사 상담 도구 - 개선 버전 (이미지 다운로드 추가)</title>
+    <title>ABC 교사 상담 도구 - 개선 버전 (인쇄 최적화 추가)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 🆕 HTML2Canvas 라이브러리 추가 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -130,6 +130,224 @@
 
         .download-loading.show {
             display: flex;
+        }
+
+        /* 🖨️ 인쇄 전용 스타일 */
+        @media print {
+            /* 불필요한 요소들 숨기기 */
+            .no-print {
+                display: none !important;
+            }
+            
+            /* 페이지 설정 */
+            @page {
+                margin: 15mm;
+                size: A4;
+            }
+            
+            /* 기본 컨테이너 숨기기 */
+            .container {
+                display: none !important;
+            }
+            
+            /* 인쇄 전용 레이아웃 */
+            .print-container {
+                display: block !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #333;
+            }
+            
+            .print-title {
+                font-size: 24px !important;
+                font-weight: bold;
+                color: #333 !important;
+                margin-bottom: 8px;
+            }
+            
+            .print-subtitle {
+                font-size: 14px !important;
+                color: #666 !important;
+            }
+            
+            .print-section {
+                margin-bottom: 20px;
+                page-break-inside: avoid;
+            }
+            
+            .print-section-title {
+                font-size: 16px !important;
+                font-weight: bold;
+                color: #333 !important;
+                margin-bottom: 8px;
+                padding: 8px 12px;
+                background: #f8f9fa !important;
+                border-left: 4px solid #007bff !important;
+                border-radius: 4px;
+            }
+            
+            .print-content {
+                padding: 12px;
+                line-height: 1.6;
+                color: #333 !important;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: white !important;
+            }
+            
+            .print-grid {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .print-grid-item {
+                flex: 1;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 10px;
+                background: #f8f9fa !important;
+            }
+            
+            .print-grid-label {
+                font-weight: bold;
+                font-size: 12px;
+                color: #666 !important;
+                margin-bottom: 4px;
+            }
+            
+            .print-grid-value {
+                font-size: 14px;
+                color: #333 !important;
+            }
+            
+            /* ABC 분석 특별 스타일 */
+            .abc-section {
+                display: flex;
+                gap: 10px;
+                margin: 15px 0;
+            }
+            
+            .abc-item {
+                flex: 1;
+                border: 2px solid;
+                border-radius: 8px;
+                padding: 12px;
+                text-align: center;
+            }
+            
+            .abc-a { border-color: #dc3545 !important; background: #fff5f5 !important; }
+            .abc-b { border-color: #ffc107 !important; background: #fffbf0 !important; }
+            .abc-c { border-color: #007bff !important; background: #f0f8ff !important; }
+            
+            .abc-label {
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+            
+            .abc-a .abc-label { color: #dc3545 !important; }
+            .abc-b .abc-label { color: #ffc107 !important; }
+            .abc-c .abc-label { color: #007bff !important; }
+            
+            .abc-content {
+                font-size: 12px;
+                color: #333 !important;
+                line-height: 1.4;
+            }
+            
+            /* 조언 섹션 스타일 */
+            .advice-section {
+                margin: 15px 0;
+            }
+            
+            .advice-thinking {
+                background: #f0f4ff !important;
+                border: 1px solid #c7d2fe;
+                border-radius: 6px;
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+            
+            .advice-action {
+                background: #f0fdfa !important;
+                border: 1px solid #a7f3d0;
+                border-radius: 6px;
+                padding: 12px;
+            }
+            
+            .advice-title {
+                font-weight: bold;
+                font-size: 13px;
+                margin-bottom: 6px;
+                color: #333 !important;
+            }
+            
+            .advice-content {
+                font-size: 12px;
+                line-height: 1.5;
+                color: #444 !important;
+            }
+            
+            /* 약속 섹션 */
+            .commitments {
+                background: #fff7ed !important;
+                border: 1px solid #fed7aa;
+                border-radius: 6px;
+                padding: 12px;
+                margin-top: 15px;
+            }
+            
+            .commitments ul {
+                margin: 0;
+                padding-left: 20px;
+            }
+            
+            .commitments li {
+                margin-bottom: 4px;
+                font-size: 12px;
+                color: #333 !important;
+            }
+            
+            /* 서명란 */
+            .signature-section {
+                margin-top: 30px;
+                border-top: 1px solid #ddd;
+                padding-top: 20px;
+            }
+            
+            .signature-grid {
+                display: flex;
+                gap: 30px;
+                margin-top: 15px;
+            }
+            
+            .signature-item {
+                flex: 1;
+                text-align: center;
+            }
+            
+            .signature-line {
+                border-bottom: 1px solid #333;
+                margin-top: 20px;
+                margin-bottom: 5px;
+                height: 20px;
+            }
+            
+            .signature-label {
+                font-size: 12px;
+                color: #666 !important;
+            }
         }
 
         /* 기존 스타일들 */
@@ -544,13 +762,13 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="container mx-auto px-4 py-8 max-w-4xl no-print">
         <!-- 헤더 -->
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 + 🤫 조용한 맞춤법 지원 + 📸 이미지 다운로드
+                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 + 🤫 조용한 맞춤법 지원 + 🖨️ 인쇄 최적화
             </div>
         </div>
 
@@ -857,18 +1075,23 @@
         </div>
     </div>
 
+    <!-- 🖨️ 인쇄 전용 레이아웃 -->
+    <div id="printContent" class="print-container hidden">
+        <!-- 인쇄 내용이 여기에 동적으로 생성됩니다 -->
+    </div>
+
     <!-- 알림 시스템 -->
-    <div id="notification" class="notification">
+    <div id="notification" class="notification no-print">
         <span id="notificationText"></span>
     </div>
 
     <!-- 🤫 조용한 맞춤법 알림 -->
-    <div id="quietSpellNotification" class="quiet-spell-notification">
+    <div id="quietSpellNotification" class="quiet-spell-notification no-print">
         ✨ 자동 수정
     </div>
 
     <!-- 도움말 버튼 -->
-    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
+    <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50 no-print">
         ❓
     </button>
 
@@ -1635,6 +1858,175 @@
             document.getElementById('finalResult').innerHTML = resultHTML;
         }
 
+        // 🖨️ 인쇄 전용 콘텐츠 생성 함수
+        function generatePrintContent() {
+            const studentName = document.getElementById('studentName').value || '학생';
+            const teacherName = document.getElementById('teacherName').value || '선생님';
+            const category = selectedCategory || '수업 참여';
+            const worryText = selectedWorry?.case.text || '고민 내용';
+            const factA = document.getElementById('factA').value || '';
+            const beliefB = document.getElementById('beliefB').value || '';
+            const consequenceC = document.getElementById('consequenceC').value || '';
+            const emotion = selectedEmotion?.name || '';
+            const thinkingAdvice = document.getElementById('thinking-textarea')?.value || '';
+            const actionAdvice = document.getElementById('help-textarea')?.value || '';
+            const encouragement = document.getElementById('encouragementText').textContent || '';
+            const personalMessage = document.getElementById('personalMessage').value || '';
+            
+            const today = new Date().toLocaleDateString('ko-KR');
+            
+            let printHTML = `
+                <div class="print-header">
+                    <div class="print-title">🌟 ABC 교사 상담 결과</div>
+                    <div class="print-subtitle">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담</div>
+                </div>
+                
+                <!-- 기본 정보 -->
+                <div class="print-section">
+                    <div class="print-section-title">📋 상담 기본 정보</div>
+                    <div class="print-grid">
+                        <div class="print-grid-item">
+                            <div class="print-grid-label">상담일</div>
+                            <div class="print-grid-value">${today}</div>
+                        </div>
+                        <div class="print-grid-item">
+                            <div class="print-grid-label">상담 학생</div>
+                            <div class="print-grid-value">${studentName}</div>
+                        </div>
+                        <div class="print-grid-item">
+                            <div class="print-grid-label">상담 교사</div>
+                            <div class="print-grid-value">${teacherName}</div>
+                        </div>
+                        <div class="print-grid-item">
+                            <div class="print-grid-label">고민 분야</div>
+                            <div class="print-grid-value">${category}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 고민 상황 -->
+                <div class="print-section">
+                    <div class="print-section-title">📝 고민 상황</div>
+                    <div class="print-content">${worryText}</div>
+                </div>
+                
+                <!-- ABC 분석 -->
+                <div class="print-section">
+                    <div class="print-section-title">🔍 ABC 분석</div>
+                    <div class="abc-section">
+                        <div class="abc-item abc-a">
+                            <div class="abc-label">🅰️ 사실 (Facts)</div>
+                            <div class="abc-content">${factA || '실제로 일어난 구체적인 상황'}</div>
+                        </div>
+                        <div class="abc-item abc-b">
+                            <div class="abc-label">🅱️ 생각 (Beliefs)</div>
+                            <div class="abc-content">${beliefB || '그때 든 생각이나 믿음'}</div>
+                        </div>
+                        <div class="abc-item abc-c">
+                            <div class="abc-label">🅲️ 결과 (Consequences)</div>
+                            <div class="abc-content">${consequenceC || '나타난 감정이나 행동'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 감정 공감 -->
+                <div class="print-section">
+                    <div class="print-section-title">💖 감정 공감</div>
+                    <div class="print-content">
+                        <strong>선택된 감정:</strong> ${selectedEmotion?.emoji} ${emotion}
+                    </div>
+                </div>
+            `;
+            
+            // 학생 조언
+            if (thinkingAdvice || actionAdvice) {
+                printHTML += `
+                    <div class="print-section">
+                        <div class="print-section-title">🎯 학생의 조언</div>
+                        <div class="advice-section">
+                `;
+                
+                if (thinkingAdvice) {
+                    printHTML += `
+                        <div class="advice-thinking">
+                            <div class="advice-title">💭 생각해볼 점</div>
+                            <div class="advice-content">${thinkingAdvice.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                }
+                
+                if (actionAdvice) {
+                    printHTML += `
+                        <div class="advice-action">
+                            <div class="advice-title">🎯 시도해볼 방법</div>
+                            <div class="advice-content">${actionAdvice.replace(/\n/g, '<br>')}</div>
+                        </div>
+                    `;
+                }
+                
+                printHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 격려 메시지
+            if (encouragement) {
+                printHTML += `
+                    <div class="print-section">
+                        <div class="print-section-title">💌 격려 메시지</div>
+                        <div class="print-content">${encouragement}</div>
+                    </div>
+                `;
+            }
+            
+            // 개인 메시지
+            if (personalMessage) {
+                printHTML += `
+                    <div class="print-section">
+                        <div class="print-section-title">✏️ 개인 메시지</div>
+                        <div class="print-content">${personalMessage}</div>
+                    </div>
+                `;
+            }
+            
+            // 우리의 약속
+            if (selectedCommitments.length > 0) {
+                const commitmentList = selectedCommitments.map(c => `<li>${c}</li>`).join('');
+                printHTML += `
+                    <div class="print-section">
+                        <div class="print-section-title">🤝 우리의 약속</div>
+                        <div class="commitments">
+                            <ul>${commitmentList}</ul>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // 서명란
+            printHTML += `
+                <div class="signature-section">
+                    <div class="print-section-title">✅ 확인 및 서명</div>
+                    <div class="signature-grid">
+                        <div class="signature-item">
+                            <div class="signature-line"></div>
+                            <div class="signature-label">상담 학생 서명</div>
+                        </div>
+                        <div class="signature-item">
+                            <div class="signature-line"></div>
+                            <div class="signature-label">담당 교사 서명</div>
+                        </div>
+                        <div class="signature-item">
+                            <div class="signature-line"></div>
+                            <div class="signature-label">학부모 확인</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return printHTML;
+        }
+
         // 🆕 이미지로 저장 기능
         async function saveAsImage() {
             const resultElement = document.getElementById('finalResult');
@@ -1749,8 +2141,24 @@
             showNotification('📄 파일이 다운로드되었습니다!');
         }
 
+        // 🖨️ 개선된 인쇄 함수
         function printResult() {
-            window.print();
+            // 인쇄 콘텐츠 생성
+            const printContent = document.getElementById('printContent');
+            printContent.innerHTML = generatePrintContent();
+            printContent.classList.remove('hidden');
+            
+            // 잠시 후 인쇄 실행 (렌더링 완료 대기)
+            setTimeout(() => {
+                window.print();
+                
+                // 인쇄 후 콘텐츠 다시 숨김
+                setTimeout(() => {
+                    printContent.classList.add('hidden');
+                }, 1000);
+            }, 100);
+            
+            showNotification('🖨️ 깔끔한 상담지를 인쇄합니다!');
         }
 
         function resetForm() {
@@ -1760,7 +2168,7 @@
         }
 
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n• 🤫 조용한 맞춤법 지원\n• 📸 이미지 다운로드 기능\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 텍스트, 이미지로 저장하거나 인쇄할 수 있습니다\n\n✨ 이제 선택한 고민이 모든 단계에서 표시되고, 조용한 맞춤법 지원과 함께 이미지 다운로드까지 가능합니다!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n• 🤫 조용한 맞춤법 지원\n• 🖨️ 인쇄 최적화 기능\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 텍스트, 이미지로 저장하거나 깔끔하게 인쇄할 수 있습니다\n\n✨ 이제 인쇄할 때 불필요한 메뉴 없이 깔끔한 상담지가 출력됩니다!`);
         }
 
         window.onload = init;
