@@ -12,6 +12,33 @@
             font-family: 'Noto Sans KR', sans-serif;
         }
         
+        /* 🤫 조용한 맞춤법 지원 스타일 */
+        .quiet-spell-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .quiet-spell-notification.show {
+            opacity: 1;
+        }
+
+        /* 자동 수정된 텍스트 표시 (매우 부드럽게) */
+        .auto-corrected {
+            background: linear-gradient(transparent 75%, #bef264 75%, #bef264 85%, transparent 85%);
+            transition: background 0.5s ease-out;
+        }
+        
         /* 선택된 고민 표시 카드 - 🆕 새로 추가된 스타일 */
         .selected-worry-card {
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -453,6 +480,14 @@
             .worry-icon {
                 align-self: flex-start;
             }
+
+            /* 🤫 모바일에서도 조용한 알림 최적화 */
+            .quiet-spell-notification {
+                top: 10px;
+                right: 10px;
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
         }
         
         @keyframes fadeIn {
@@ -477,7 +512,7 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 기능
+                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 + 🤫 조용한 맞춤법 지원
             </div>
         </div>
 
@@ -527,11 +562,11 @@
             <div class="grid md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">👦 상담하는 학생 이름</label>
-                    <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="김민수">
+                    <input type="text" id="studentName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="김민수" spellcheck="true">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">👩‍🏫 상담받는 선생님 이름</label>
-                    <input type="text" id="teacherName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="이영희 선생님">
+                    <input type="text" id="teacherName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="이영희 선생님" spellcheck="true">
                 </div>
             </div>
             <div class="mt-6 text-right">
@@ -618,7 +653,7 @@
                 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                     <h4 class="font-medium text-gray-800 mb-2">또는 직접 입력하기</h4>
-                    <textarea id="customWorry" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="이 분야에서 다른 고민이 있다면 여기에 적어주세요..." oninput="checkCustomWorryInput()"></textarea>
+                    <textarea id="customWorry" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" placeholder="이 분야에서 다른 고민이 있다면 여기에 적어주세요..." oninput="checkCustomWorryInput(); quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
             </div>
 
@@ -635,17 +670,17 @@
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4">
                     <h3 class="font-semibold text-red-700 mb-2">🅰️ 사실 (Facts)</h3>
                     <p class="text-sm text-gray-600 mb-2">실제로 일어난 일</p>
-                    <textarea id="factA" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" rows="3"></textarea>
+                    <textarea id="factA" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" rows="3" oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <h3 class="font-semibold text-yellow-700 mb-2">🅱️ 생각 (Beliefs)</h3>
                     <p class="text-sm text-gray-600 mb-2">그때 든 생각이나 믿음</p>
-                    <textarea id="beliefB" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" rows="3"></textarea>
+                    <textarea id="beliefB" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" rows="3" oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 class="font-semibold text-blue-700 mb-2">🅲️ 결과 (Consequences)</h3>
                     <p class="text-sm text-gray-600 mb-2">그래서 나타난 감정이나 행동</p>
-                    <textarea id="consequenceC" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3"></textarea>
+                    <textarea id="consequenceC" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" rows="3" oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
             </div>
             <div class="flex justify-between">
@@ -688,7 +723,7 @@
                     <div id="thinkingChecklist" class="space-y-2">
                         <!-- 생각 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..."></textarea>
+                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
                 
                 <!-- 체크리스트 적용 기능 - 행동 아이디어 -->
@@ -702,7 +737,7 @@
                     <div id="helpChecklist" class="space-y-2">
                         <!-- 행동 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..."></textarea>
+                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
                 </div>
             </div>
 
@@ -734,7 +769,7 @@
 
             <div class="bg-pink-50 border border-pink-200 rounded-lg p-4 mb-6">
                 <h3 class="font-medium text-pink-700 mb-2">✏️ 개인적인 메시지 추가</h3>
-                <textarea id="personalMessage" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" rows="3" placeholder="선생님께 전하고 싶은 개인적인 응원 메시지를 적어주세요..."></textarea>
+                <textarea id="personalMessage" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" rows="3" placeholder="선생님께 전하고 싶은 개인적인 응원 메시지를 적어주세요..." oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
             </div>
 
             <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
@@ -777,6 +812,11 @@
         <span id="notificationText"></span>
     </div>
 
+    <!-- 🤫 조용한 맞춤법 알림 -->
+    <div id="quietSpellNotification" class="quiet-spell-notification">
+        ✨ 자동 수정
+    </div>
+
     <!-- 도움말 버튼 -->
     <button onclick="showHelp()" class="fixed bottom-4 right-4 bg-indigo-500 hover:bg-indigo-600 text-white p-4 rounded-full shadow-lg transition-colors z-50">
         ❓
@@ -791,6 +831,66 @@
         let selectedAdvice = { thinking: [], help: [] };
         let selectedCommitments = [];
         let detectedCategory = null;
+
+        // 🤫 조용한 맞춤법 지원 시스템
+        const quietCorrections = {
+            // 상담에서 자주 쓰이는 기본적인 표현들
+            '거예요': '것 같아요',
+            '있구요': '있고요',
+            '그런거': '그런 것',
+            '안해서': '안 해서',
+            '해야할지': '해야 할지',
+            '힘드실거예요': '힘드실 것 같아요',
+            '도와주세요': '도와주세요',
+            '이해해주세요': '이해해 주세요',
+            '걱정이에요': '걱정돼요',
+            '고민이에요': '고민이에요',
+            '어려워요': '어려워요',
+            '집중을': '집중을',
+            '안되요': '안 돼요',
+            '될꺼예요': '될 것 같아요',
+            '그럴꺼예요': '그럴 것 같아요',
+            '있을꺼예요': '있을 것 같아요',
+            '할꺼예요': '할 것 같아요',
+            '좋을꺼예요': '좋을 것 같아요'
+        };
+
+        // 조용한 자동 수정 함수 (매우 비침습적)
+        function quietAutoCorrect(textarea) {
+            const originalText = textarea.value;
+            let correctedText = originalText;
+            let correctionMade = false;
+
+            // 기본적인 오류만 조용히 수정
+            Object.entries(quietCorrections).forEach(([wrong, correct]) => {
+                if (correctedText.includes(wrong)) {
+                    correctedText = correctedText.replace(new RegExp(wrong, 'g'), correct);
+                    correctionMade = true;
+                }
+            });
+
+            // 수정이 있었다면 조용히 적용
+            if (correctionMade && correctedText !== originalText) {
+                const cursorPos = textarea.selectionStart;
+                textarea.value = correctedText;
+                
+                // 커서 위치 유지 (사용자 경험 방해하지 않기)
+                textarea.setSelectionRange(cursorPos, cursorPos);
+                
+                // 매우 조용한 알림 (0.8초만)
+                showQuietSpellNotification();
+            }
+        }
+
+        // 조용한 맞춤법 알림 (매우 부드럽게)
+        function showQuietSpellNotification() {
+            const notification = document.getElementById('quietSpellNotification');
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 800); // 짧고 조용하게
+        }
 
         // 데이터
         const worryCases = {
@@ -1558,7 +1658,7 @@
         }
 
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 이제 선택한 고민이 모든 단계에서 표시됩니다!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n• 🤫 조용한 맞춤법 지원\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 이제 선택한 고민이 모든 단계에서 표시되고, 조용한 맞춤법 지원으로 더 정확한 한국어를 사용할 수 있습니다!`);
         }
 
         window.onload = init;
