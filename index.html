@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABC 교사 상담 도구 - 개선 버전 (고민 내용 지속 표시)</title>
+    <title>ABC 교사 상담 도구 - 개선 버전 (이미지 다운로드 추가)</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 🆕 HTML2Canvas 라이브러리 추가 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap');
         
@@ -107,6 +109,27 @@
             font-size: 0.75rem;
             font-weight: 500;
             margin-top: 4px;
+        }
+
+        /* 🆕 이미지 다운로드용 스타일 */
+        .download-result-area {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .download-loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .download-loading.show {
+            display: flex;
         }
 
         /* 기존 스타일들 */
@@ -503,6 +526,21 @@
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
             border: 2px solid #f59e0b;
         }
+
+        /* 🆕 이미지 다운로드 로딩 애니메이션 */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #bfdbfe;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -512,7 +550,7 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">🌟 ABC 교사 상담 도구</h1>
             <p class="text-lg text-gray-600">학생이 선생님의 고민을 듣고 조언하며 함께 해결책을 찾는 또래 상담 서비스</p>
             <div class="mt-3 text-sm bg-gradient-to-r from-blue-100 to-purple-100 text-blue-800 inline-block px-4 py-2 rounded-full border border-blue-200">
-                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 + 🤫 조용한 맞춤법 지원
+                ✨ 고민 내용 지속 표시 + 스마트 분류 & 체크리스트 적용 + 🤫 조용한 맞춤법 지원 + 📸 이미지 다운로드
             </div>
         </div>
 
@@ -723,7 +761,7 @@
                     <div id="thinkingChecklist" class="space-y-2">
                         <!-- 생각 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
+                    <textarea id="thinking-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mt-3" rows="4" placeholder="생각해볼 점들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this); updateAdvicePreview();" spellcheck="true"></textarea>
                 </div>
                 
                 <!-- 체크리스트 적용 기능 - 행동 아이디어 -->
@@ -737,7 +775,7 @@
                     <div id="helpChecklist" class="space-y-2">
                         <!-- 행동 체크리스트가 여기에 동적으로 추가됩니다 -->
                     </div>
-                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this);" spellcheck="true"></textarea>
+                    <textarea id="help-textarea" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent mt-3" rows="4" placeholder="행동 아이디어들이 여기에 추가됩니다..." oninput="quietAutoCorrect(this); updateAdvicePreview();" spellcheck="true"></textarea>
                 </div>
             </div>
 
@@ -789,13 +827,25 @@
         <div class="step-card border-2 rounded-lg p-6 mb-6 hidden" id="step7">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800">🎉 상담이 완료되었습니다!</h2>
             
-            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6 mb-6" id="finalResult">
+            <!-- 🆕 이미지 다운로드를 위한 결과 영역 -->
+            <div class="download-result-area" id="finalResult">
                 <!-- 최종 결과가 여기에 표시됩니다 -->
             </div>
 
-            <div class="grid md:grid-cols-3 gap-4 mb-6">
+            <!-- 🆕 다운로드 로딩 표시 -->
+            <div class="download-loading" id="downloadLoading">
+                <div class="spinner"></div>
+                <span>이미지를 생성하는 중...</span>
+            </div>
+
+            <!-- 🆕 업데이트된 버튼 레이아웃 -->
+            <div class="grid md:grid-cols-4 gap-4 mb-6">
                 <button onclick="saveAsText()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                     📄 텍스트로 저장
+                </button>
+                <!-- 🆕 이미지 다운로드 버튼 추가 -->
+                <button onclick="saveAsImage()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                    📸 이미지로 저장
                 </button>
                 <button onclick="printResult()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
                     🖨️ 인쇄하기
@@ -1585,6 +1635,58 @@
             document.getElementById('finalResult').innerHTML = resultHTML;
         }
 
+        // 🆕 이미지로 저장 기능
+        async function saveAsImage() {
+            const resultElement = document.getElementById('finalResult');
+            const loadingElement = document.getElementById('downloadLoading');
+            
+            try {
+                // 로딩 시작
+                loadingElement.classList.add('show');
+                
+                // HTML2Canvas 옵션
+                const options = {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // 고해상도
+                    useCORS: true,
+                    allowTaint: true,
+                    width: resultElement.offsetWidth,
+                    height: resultElement.offsetHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    // 폰트 렌더링 개선
+                    letterRendering: true,
+                    logging: false
+                };
+                
+                // Canvas 생성
+                const canvas = await html2canvas(resultElement, options);
+                
+                // 이미지 다운로드
+                const studentName = document.getElementById('studentName').value || '학생';
+                const teacherName = document.getElementById('teacherName').value || '선생님';
+                const date = new Date().toLocaleDateString('ko-KR').replace(/\./g, '').replace(/\s/g, '');
+                
+                const link = document.createElement('a');
+                link.download = `ABC상담결과_${studentName}_${teacherName}_${date}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                
+                // 다운로드 실행
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('📸 이미지가 성공적으로 다운로드되었습니다!');
+                
+            } catch (error) {
+                console.error('이미지 생성 오류:', error);
+                showNotification('❗ 이미지 생성에 실패했습니다. 다시 시도해주세요.');
+            } finally {
+                // 로딩 종료
+                loadingElement.classList.remove('show');
+            }
+        }
+
         function saveAsText() {
             const studentName = document.getElementById('studentName').value;
             const teacherName = document.getElementById('teacherName').value;
@@ -1658,7 +1760,7 @@
         }
 
         function showHelp() {
-            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n• 🤫 조용한 맞춤법 지원\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 저장하거나 인쇄할 수 있습니다\n\n✨ 이제 선택한 고민이 모든 단계에서 표시되고, 조용한 맞춤법 지원으로 더 정확한 한국어를 사용할 수 있습니다!`);
+            alert(`ABC 교사 상담 도구 사용법:\n\n🎨 개선된 기능들:\n• 단계별 네비게이션으로 쉬운 이동\n• ABC 카드로 시각적 이해\n• 🤖 스마트 자동 분류\n• 📝 체크리스트 적용 기능\n• 🆕 선택된 고민 내용 지속 표시\n• 🤫 조용한 맞춤법 지원\n• 📸 이미지 다운로드 기능\n\n1. 학생과 선생님 이름을 입력합니다\n2. 선생님의 고민 상황을 선택하거나 직접 입력합니다\n3. ABC 모델로 상황을 분석합니다\n4. 선생님의 감정에 공감합니다\n5. 학생의 경험을 바탕으로 조언을 제공합니다\n6. 격려 메시지와 실천 약속을 정합니다\n7. 결과를 텍스트, 이미지로 저장하거나 인쇄할 수 있습니다\n\n✨ 이제 선택한 고민이 모든 단계에서 표시되고, 조용한 맞춤법 지원과 함께 이미지 다운로드까지 가능합니다!`);
         }
 
         window.onload = init;
